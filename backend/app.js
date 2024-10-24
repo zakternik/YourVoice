@@ -8,7 +8,7 @@ var mongoose = require('mongoose');
 //CORS - React demo
 var cors = require('cors');
 
-var mongoDB = 'mongodb+srv://'+dbAuth+'@yourvoice.beii5.mongodb.net/?retryWrites=true&w=majority&appName=YourVoice';
+var mongoDB = 'mongodb+srv://'+dbAuth+'@yourvoice.beii5.mongodb.net/YourVoice?retryWrites=true&w=majority&appName=YourVoice';
 mongoose.connect(mongoDB,  { useNewUrlParser:true, useUnifiedTopology: true  });
 mongoose.Promise = global.Promise;
 var db = mongoose.connection;

@@ -6,6 +6,7 @@ var SALT_WORK_FACTOR = 10;
 var UserSchema = new Schema({
 	'username' : String,
 	'password' : String,
+
 	'name' : String
 });
 
