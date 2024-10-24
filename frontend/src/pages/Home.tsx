@@ -1,16 +1,7 @@
-//import { Button, Heading } from "@chakra-ui/react";
-/*
-import {
-    Menu,
-    MenuButton,
-    MenuList,
-    MenuItem,
-    MenuItemOption,
-    MenuGroup,
-    MenuOptionGroup,
-    MenuDivider,
-} from "@chakra-ui/react";
- */
+import { Button } from '@chakra-ui/react';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faDoorOpen } from '@fortawesome/free-solid-svg-icons';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -40,11 +31,25 @@ const Home: React.FC = () => {
           <hr></hr>
 
           <div className="d-flex justify-content-center flex-column">
-            <h3 className="d-flex justify-content-center mb-4">
+            <h3 className="d-flex justify-content-center mb-4 mt-4">
               Vstop v forum
             </h3>
             <Link to="/posts" className="d-flex justify-content-center">
-              <button className="btn btn-primary">YOUR VOICE</button>
+              <Button
+                w={'180px'}
+                colorScheme={'blue'}
+                bg={'blue.400'}
+                rounded={'full'}
+                px={6}
+                _hover={{
+                  bg: 'blue.300',
+                }}
+              >
+                <Link to={`/posts`}>
+                  Vstopi <FontAwesomeIcon icon={faDoorOpen} />
+                </Link>{' '}
+                <br></br>
+              </Button>
             </Link>
           </div>
         </div>
