@@ -12,6 +12,7 @@ import {
 } from "@chakra-ui/react";
  */
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Home: React.FC = () => {
   return (
@@ -35,10 +36,21 @@ const Home: React.FC = () => {
             ter pravice za moderatorje in administratorje. Za razvoj je
             uporabljen MERN sklad.
           </p>
+
+          <hr></hr>
+
+          <div className="d-flex justify-content-center flex-column">
+            <h3 className="d-flex justify-content-center mb-4">
+              Vstop v forum
+            </h3>
+            <Link to="/posts" className="d-flex justify-content-center">
+              <button className="btn btn-primary">YOUR VOICE</button>
+            </Link>
+          </div>
         </div>
 
         <div className="col-md-6">
-          <img src="images/default.png" width="500px" alt="Programming Image" />
+          <img src="images/default.png" width="500px" alt="YourVoice logo" />
         </div>
       </div>
     </div>
