@@ -1,20 +1,26 @@
-import { Button } from '@chakra-ui/react';
-
+import { Box, Button, Heading, Image, Stack, Text } from '@chakra-ui/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDoorOpen } from '@fortawesome/free-solid-svg-icons';
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 
 const Home: React.FC = () => {
   return (
-    <div>
-      <div className="row">
-        <div className="col-md-6">
-          {/* 
-                    <Heading className="pb-4">
-                        Forum Your Voice
-                    </Heading>*/}
-          <p>
+    <Box p={6} bg="gray.50">
+      <Stack
+        direction={{ base: 'column', md: 'row' }}
+        spacing={8}
+        align="center"
+        justify="space-between"
+        maxW="container.xl"
+        mx="auto"
+      >
+        {/* Left Column */}
+        <Box flex={1} textAlign={{ base: 'center', md: 'left' }} px={4}>
+          <Heading as="h1" size="xl" mb={4}>
+            Forum YourVoice
+          </Heading>
+          <Text fontSize="lg" color="gray.700" mb={6}>
             YourVoice je interaktivni forum, zasnovan za izmenjavo informacij in
             povezovanje uporabnikov. Aplikacija omogoča prijavljenim
             uporabnikom, da objavljajo svoje vsebine, komentirajo, ocenjujejo
@@ -26,39 +32,41 @@ const Home: React.FC = () => {
             ostale možnosti. Aplikacija vključuje tudi posebne funkcionalnosti
             ter pravice za moderatorje in administratorje. Za razvoj je
             uporabljen MERN sklad.
-          </p>
+          </Text>
 
-          <hr></hr>
-
-          <div className="d-flex justify-content-center flex-column">
-            <h3 className="d-flex justify-content-center mb-4 mt-4">
+          <Box textAlign="center" mt={8}>
+            <Heading as="h3" size="md" mb={4}>
               Vstop v forum
-            </h3>
-            <Link to="/posts" className="d-flex justify-content-center">
-              <Button
-                w={'180px'}
-                colorScheme={'blue'}
-                bg={'blue.400'}
-                rounded={'full'}
-                px={6}
-                _hover={{
-                  bg: 'blue.300',
-                }}
-              >
-                <Link to={`/posts`}>
-                  Vstopi <FontAwesomeIcon icon={faDoorOpen} />
-                </Link>{' '}
-                <br></br>
-              </Button>
-            </Link>
-          </div>
-        </div>
+            </Heading>
+            <Button
+              as={RouterLink}
+              to="/posts"
+              size="lg"
+              colorScheme="blue"
+              rounded="full"
+              px={6}
+              rightIcon={<FontAwesomeIcon icon={faDoorOpen} />}
+              _hover={{
+                bg: 'blue.300',
+              }}
+            >
+              Vstopi
+            </Button>
+          </Box>
+        </Box>
 
-        <div className="col-md-6">
-          <img src="images/default.png" width="500px" alt="YourVoice logo" />
-        </div>
-      </div>
-    </div>
+        {/* Right Column */}
+        <Box flex={1} display="flex" justifyContent="center">
+          <Image
+            src="images/default.png"
+            alt="YourVoice logo"
+            boxSize="100%"
+            maxW="500px"
+            borderRadius="lg"
+          />
+        </Box>
+      </Stack>
+    </Box>
   );
 };
 

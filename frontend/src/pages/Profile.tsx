@@ -1,6 +1,5 @@
 const Profile: React.FC = () => {
-    return null;
-  };
-  
-  export default Profile;
-  
+  return null;
+};
+
+export default Profile;
