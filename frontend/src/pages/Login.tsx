@@ -15,6 +15,8 @@ import {
 } from '@chakra-ui/react';
 import { UserContext, UserContextType } from '../userContext';
 
+// TODO - Add validation for input fields
+
 const Login: React.FC = () => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
