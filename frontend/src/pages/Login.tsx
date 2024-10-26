@@ -11,6 +11,7 @@ import {
   Image,
   Heading,
   useToast,
+  Checkbox,
 } from '@chakra-ui/react';
 import { UserContext, UserContextType } from '../userContext';
 
@@ -18,6 +19,7 @@ const Login: React.FC = () => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const userContext = useContext<UserContextType>(UserContext);
   const toast = useToast();
@@ -103,12 +105,19 @@ const Login: React.FC = () => {
           <FormControl id="password" isRequired>
             <FormLabel fontSize="lg">Geslo</FormLabel>
             <Input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               placeholder="Vnesite geslo"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               size="lg"
             />
+            <Checkbox
+              mt={2}
+              isChecked={showPassword}
+              onChange={() => setShowPassword(!showPassword)}
+            >
+              Prikaži geslo
+            </Checkbox>
           </FormControl>
 
           {error && (

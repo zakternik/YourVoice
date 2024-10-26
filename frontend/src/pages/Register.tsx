@@ -9,6 +9,7 @@ import {
   Text,
   Heading,
   useToast,
+  Checkbox, // Uvoz Checkbox
 } from '@chakra-ui/react';
 import { UserContext, UserContextType } from '../userContext';
 
@@ -17,6 +18,7 @@ const Register: React.FC = () => {
   const [password, setPassword] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false); // Stan za prikaz gesla
 
   const userContext = useContext<UserContextType>(UserContext);
   const toast = useToast();
@@ -103,12 +105,19 @@ const Register: React.FC = () => {
           <FormControl id="password" isRequired>
             <FormLabel fontSize="lg">Geslo</FormLabel>
             <Input
-              type="password"
+              type={showPassword ? 'text' : 'password'} // Uporabi 'text' ali 'password' glede na stanje
               placeholder="Vnesite geslo"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               size="lg"
             />
+            <Checkbox
+              mt={2}
+              isChecked={showPassword}
+              onChange={() => setShowPassword(!showPassword)}
+            >
+              Prikaži geslo
+            </Checkbox>
           </FormControl>
 
           {error && (
