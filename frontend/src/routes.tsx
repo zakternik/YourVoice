@@ -7,13 +7,13 @@ import Register from './pages/Register';
 
 export const publicRoutes = [
   { name: 'Domov', to: '/', visible: true, element: <Home /> },
+  { name: 'Prijava', to: '/login', visible: true, element: <Login /> },
   {
     name: 'Registracija',
     to: '/register',
     visible: true,
     element: <Register />,
   },
-  { name: 'Prijava', to: '/login', visible: true, element: <Login /> },
   { name: 'Objave', to: '/posts', visible: true, element: <Posts /> },
 ];
 
