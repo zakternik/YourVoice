@@ -9,7 +9,7 @@ import {
   Text,
   Heading,
   useToast,
-  Checkbox, // Uvoz Checkbox
+  Checkbox,
 } from '@chakra-ui/react';
 import { UserContext, UserContextType } from '../userContext';
 
