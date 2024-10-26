@@ -1,13 +1,26 @@
 import React, { useContext, useState, FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
-import { UserContext, UserContextType } from '../userContext'; // Ensure UserContextType is imported
+import {
+  Box,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  Stack,
+  Text,
+  Image,
+  Heading,
+  useToast,
+} from '@chakra-ui/react';
+import { UserContext, UserContextType } from '../userContext';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string>('');
 
-  const userContext = useContext<UserContextType>(UserContext); // Ensure UserContextType is correctly defined
+  const userContext = useContext<UserContextType>(UserContext);
+  const toast = useToast();
 
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -17,64 +30,105 @@ const Login: React.FC = () => {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: username,
-          password: password,
-        }),
+        body: JSON.stringify({ username, password }),
       });
 
-      // Check if the response is okay
       if (!res.ok) {
         throw new Error('Network response was not ok');
       }
 
       const data = await res.json();
 
-      // Assuming data structure has an _id for a successful login
       if (data && data._id) {
         userContext.setUserContext(data);
+        toast({
+          title: 'Prijava uspešna',
+          description: `Dobrodošli, ${username}!`,
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
       } else {
+        setError('Nepravilno uporabniško ime ali geslo');
         setUsername('');
         setPassword('');
-        setError('Invalid username or password');
       }
     } catch (error) {
       console.error(error);
-      setError('Failed to log in. Please try again.');
+      setError('Napaka pri prijavi. Poskusite znova.');
     }
   };
 
   return (
-    <form onSubmit={handleLogin}>
+    <Box
+      maxW="xl"
+      mx="auto"
+      mt={12}
+      p={8}
+      borderWidth={1}
+      borderRadius="lg"
+      boxShadow="2xl"
+      bg="white"
+    >
       {userContext.user ? <Navigate replace to="/" /> : null}
-      <input
-        type="text"
-        name="username"
-        placeholder="Uporabniško ime"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
-      <br />
-      <br />
-      <input
-        type="password"
-        name="password"
-        placeholder="Geslo"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <br />
-      <br />
-      <input
-        className="btn btn-success"
-        type="submit"
-        name="submit"
-        value="Prijava"
-      />
-      <br />
-      <br />
-      {error && <label>{error}</label>}
-    </form>
+
+      <Stack align="center" mb={6}>
+        <Image
+          src="images/default.png"
+          alt="YourVoice Logo"
+          boxSize="150px"
+          mb={4}
+        />
+        <Heading as="h2" size="lg" color="blue.600">
+          Prijava v YourVoice
+        </Heading>
+        <Text fontSize="md" color="gray.600">
+          Pridružite se pogovoru!
+        </Text>
+      </Stack>
+
+      <form onSubmit={handleLogin}>
+        <Stack spacing={5}>
+          <FormControl id="username" isRequired>
+            <FormLabel fontSize="lg">Uporabniško ime</FormLabel>
+            <Input
+              type="text"
+              placeholder="Vnesite uporabniško ime"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              size="lg"
+            />
+          </FormControl>
+
+          <FormControl id="password" isRequired>
+            <FormLabel fontSize="lg">Geslo</FormLabel>
+            <Input
+              type="password"
+              placeholder="Vnesite geslo"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              size="lg"
+            />
+          </FormControl>
+
+          {error && (
+            <Text color="red.500" fontSize="sm" textAlign="center">
+              {error}
+            </Text>
+          )}
+
+          <Button
+            colorScheme="blue"
+            type="submit"
+            mt={4}
+            size="lg"
+            width="full"
+          >
+            Prijava
+          </Button>
+        </Stack>
+      </form>
+    </Box>
   );
 };
 
