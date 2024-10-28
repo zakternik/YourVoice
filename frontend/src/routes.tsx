@@ -18,6 +18,7 @@ export const publicRoutes = [
 ];
 
 export const protectedRoutes = [
-  { name: 'Logout', to: '/logout', visible: true, element: <Logout /> },
-  { name: 'Profile', to: '/profile', visible: true, element: <Profile /> },
+  { name: 'Domov', to: '/', visible: true, element: <Home /> },
+  { name: 'Odjava', to: '/logout', visible: true, element: <Logout /> },
+  { name: 'Profil', to: '/profile', visible: true, element: <Profile /> },
 ];

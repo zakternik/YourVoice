@@ -1,15 +1,22 @@
-import React from 'react';
+// Header.tsx
+import React, { useContext } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { publicRoutes } from '../routes';
+import { publicRoutes, protectedRoutes } from '../routes';
+import { UserContext } from '../userContext';
 
 interface RouteType {
   name: string;
   to: string;
   visible: boolean;
-  element: React.ReactNode; // Adjust if you want to specify other properties
+  element: React.ReactNode;
 }
 
 const Header: React.FC = () => {
+  const { user } = useContext(UserContext); // Pridobimo stanje prijavljenega uporabnika iz konteksta
+
+  // Nastavimo vidne poti glede na to ali je uporabnik prijavljen ali ne
+  const routesToShow = user ? protectedRoutes : publicRoutes;
+
   return (
     <div className="container">
       <header className="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
@@ -21,26 +28,21 @@ const Header: React.FC = () => {
         </Link>
 
         <ul className="nav nav-pills">
-          {publicRoutes
+          {/* Prikaz poti glede na prijavo */}
+          {routesToShow
             .filter((route) => route.visible)
-            .map(
-              (
-                route: RouteType // Specify the type for route
-              ) => (
-                <li key={route.to} className="nav-item">
-                  {' '}
-                  {/* Add a unique key for each item */}
-                  <NavLink
-                    to={route.to}
-                    className={({ isActive }) =>
-                      isActive ? 'nav-link active' : 'nav-link'
-                    }
-                  >
-                    {route.name}
-                  </NavLink>
-                </li>
-              )
-            )}
+            .map((route: RouteType) => (
+              <li key={route.to} className="nav-item">
+                <NavLink
+                  to={route.to}
+                  className={({ isActive }) =>
+                    isActive ? 'nav-link active' : 'nav-link'
+                  }
+                >
+                  {route.name}
+                </NavLink>
+              </li>
+            ))}
         </ul>
       </header>
     </div>
