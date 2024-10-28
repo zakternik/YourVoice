@@ -4,11 +4,23 @@ var bcrypt = require('bcrypt');
 var SALT_WORK_FACTOR = 10;
 
 var UserSchema = new Schema({
-	'username' : String,
-	'password' : String,
-
-	'name' : String
+	username: { type: String, required: true, unique: true },
+	email: { type: String, required: true, unique: true, match: /.+\@.+\..+/ },
+    password: { type: String, required: true,
+		validate: {
+			validator: function(v) {
+				return /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(v); 
+			}, 
+			message: props => 'Geslo mora biti dolgo vsaj 8 znakov in vsebovati vsaj eno veliko črko in eno številko.' 
+		} 
+	},
+    role: { type: String, enum: ['user', 'moderator', 'admin'], default: 'user' },
+    bio: { type: String, default: '', },
+	avatar: { type: String, default: ''},
+    isBanned: { type: Boolean, default: false },
+	createdAt: { type: Date, default: Date.now }
 });
+
 
 UserSchema.statics.authenticate = function(username, password, callback){
 	User.findOne({ username: username})
@@ -40,6 +52,4 @@ UserSchema.pre('save', function(next) {
 	});
 });
 
-//module.exports = mongoose.model('users', UserSchema);
-var User = mongoose.model('users', UserSchema);
-module.exports = User;
+module.exports = mongoose.model('users', UserSchema);

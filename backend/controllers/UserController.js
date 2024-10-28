@@ -1,3 +1,6 @@
+const bcrypt = require('bcrypt'); // Ensure bcrypt is imported
+const SALT_WORK_FACTOR = 10; // Define salt work factor
+
 var UserModel = require('../models/UserModel.js');
 /**
  * UserController.js
@@ -10,7 +13,7 @@ module.exports = {
      * UserController.list()
      */
     list: function (req, res) {
-        UserModel.find(function (err, Users) {
+        UserModel.find.select('-password').exec(function (err, Users) {
             if (err) {
                 return res.status(500).json({
                     message: 'Error when getting User.',
@@ -47,7 +50,7 @@ module.exports = {
     show: function (req, res) {
         var id = req.params.id;
 
-        UserModel.findOne({_id: id}, function (err, User) {
+        UserModel.findOne({_id: id}).select('-password').exec(function (err, User) {
             if (err) {
                 return res.status(500).json({
                     message: 'Error when getting User.',
@@ -62,7 +65,6 @@ module.exports = {
             }
 
             return res.render('user/profile', User);
-            //return res.json(User);
         });
     },
 
@@ -70,95 +72,140 @@ module.exports = {
      * UserController.create()
      */
     create: function (req, res) {
-        UserModel.findOne({username: req.body.username}, function (err, User) {
+        var newUser = new UserModel({
+            username: req.body.username,
+            password: req.body.password,
+            email: req.body.email
+        });
+    
+        newUser.save(function (err, User) {
             if (err) {
+                // Check for duplicate key error
+                if (err.code === 11000) {
+                    const field = err.keyPattern.username ? 'Username' : 'Email';
+                    return res.status(409).json({
+                        message: `${field} already taken. Please choose another.`,
+                        error: err
+                    });
+                }
+    
                 return res.status(500).json({
-                    message: 'Error when getting User',
+                    message: 'Error when creating User',
                     error: err
                 });
             }
-
-            if (!User) {
-                var User = new UserModel({
-                    username: req.body.username,
-                    password: req.body.password,
-                    name: req.body.name
-                });
-        
-                User.save(function (err, User) {
-                    if (err) {
-                        return res.status(500).json({
-                            message: 'Error when creating User',
-                            error: err
-                        });
-                    }
-        
-                    return res.status(201).json(User);
-                });
-            }
-            else {
-                return res.status(500).json({
-                    message: 'Username already taken',
-                    error: err
-                });
-            }
+    
+            // Remove password from the response
+            User.password = undefined;
+            return res.status(201).json(User);
         });
     },
 
     login: function (req, res, next) {
-        UserModel.authenticate(req.body.username, req.body.password, function (error, user) {
-            if (error || !user) {
-                var err = new Error("Wrong username or password");
-                err.status = 401;
-                //return res.redirect('/user/login');
-                return res.json({
-                    message: 'Wrong login!',
-                    error: err
-                })
+    // First, find the user by username
+    UserModel.findOne({ username: req.body.username }, function (error, user) {
+        if (error || !user) {
+            return res.status(401).json({
+                message: 'Wrong username or password',
+                error: new Error("Wrong username or password")
+            });
+        }
+
+        // Compare the provided password with the hashed password
+        bcrypt.compare(req.body.password, user.password, function (err, isMatch) {
+            if (err || !isMatch) {
+                return res.status(401).json({
+                    message: 'Wrong username or password',
+                    error: new Error("Wrong username or password")
+                });
             } else {
+                // If password matches, create session
                 req.session.userId = user._id;
                 req.session.username = user.username;
 
+                // Optionally, remove password from user object before sending response
+                user.password = undefined;
+
                 return res.json(user);
-                //return res.render('index', {userId: req.session.userId, username:req.session.username});
             }
         });
+    });
     },
 
     /**
      * UserController.update()
      */
     update: function (req, res) {
-        var id = req.params.id;
+        const id = req.params.id;
 
-        UserModel.findOne({_id: id}, function (err, User) {
+        // Check if the user exists first
+        UserModel.findOne({ _id: id }, function (err, user) {
             if (err) {
                 return res.status(500).json({
                     message: 'Error when getting User',
                     error: err
                 });
             }
-
-            if (!User) {
+    
+            if (!user) {
                 return res.status(404).json({
                     message: 'No such User'
                 });
             }
-
-            User.name = req.body.name ? req.body.name : User.name;
-            //User.username = req.body.username ? req.body.username : User.username;
-            User.password = req.body.password ? req.body.password : User.password;
-
-            User.save(function (err, User) {
-                if (err) {
-                    return res.status(500).json({
-                        message: 'Error when updating User.',
-                        error: err
+    
+            // Prepare updates object
+            const updates = {};
+            
+            // Check if password needs to be updated
+            if (req.body.password) {
+                // Validate the new password against your rules
+                if (!/^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(req.body.password)) {
+                    return res.status(400).json({
+                        message: 'Geslo mora biti dolgo vsaj 8 znakov in vsebovati vsaj eno veliko črko in eno številko.'
                     });
                 }
-
-                return res.json(User);
-            });
+    
+                // Hash the new password
+                bcrypt.hash(req.body.password, SALT_WORK_FACTOR, function(err, hash) {
+                    if (err) {
+                        return res.status(500).json({
+                            message: 'Error while hashing password.',
+                            error: err
+                        });
+                    }
+                    // Update password with the hashed value
+                    updates.password = hash;
+    
+                    // Now, update bio and avatar if provided
+                    updates.bio = req.body.bio || user.bio; // Retain existing bio if not provided
+                    updates.avatar = req.body.avatar || user.avatar; // Retain existing avatar if not provided
+    
+                    // Proceed to update user with hashed password
+                    UserModel.updateOne({ _id: id }, updates, { runValidators: false }, function (err, result) {
+                        if (err) {
+                            return res.status(500).json({
+                                message: 'Error when updating User.',
+                                error: err
+                            });
+                        }
+                        return res.json({ message: 'User updated successfully' });
+                    });
+                });
+            } else {
+                // If no password is being updated, only update bio and avatar
+                updates.bio = req.body.bio || user.bio; // Use existing bio if not provided
+                updates.avatar = req.body.avatar || user.avatar; // Use existing avatar if not provided
+    
+                UserModel.updateOne({ _id: id }, updates, { runValidators: true }, function (err, result) {
+                    if (err) {
+                        return res.status(500).json({
+                            message: 'Error when updating User.',
+                            error: err
+                        });
+                    }
+                    return res.json({ message: 'User updated successfully' });
+                });
+            }
         });
     },
 
