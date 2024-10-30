@@ -18,7 +18,7 @@ import { UserContext, UserContextType } from '../userContext';
 const Register: React.FC = () => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const [name, setName] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false); // Stan za prikaz gesla
 
@@ -29,10 +29,10 @@ const Register: React.FC = () => {
     e.preventDefault();
 
     try {
-      const res = await fetch('http://localhost:3001/users/register', {
+      const res = await fetch('http://localhost:3000/user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, name }),
+        body: JSON.stringify({ username, password, email }),
       });
 
       if (!res.ok) {
@@ -41,12 +41,12 @@ const Register: React.FC = () => {
 
       const data = await res.json();
 
-      if (data && data.id) {
+      if (data && data._id) {
         userContext.setUserContext(data); // Setting user context with the new user data
 
         toast({
           title: 'Registracija uspešna!',
-          description: `Dobrodošli, ${name}!`,
+          description: `Dobrodošli, ${username}!`,
           status: 'success',
           duration: 3000,
           isClosable: true,
@@ -82,13 +82,13 @@ const Register: React.FC = () => {
 
       <form onSubmit={handleRegister}>
         <Stack spacing={5}>
-          <FormControl id="name" isRequired>
-            <FormLabel fontSize="lg">Ime in priimek</FormLabel>
+          <FormControl id="email" isRequired>
+            <FormLabel fontSize="lg">Email:</FormLabel>
             <Input
               type="text"
-              placeholder="Vnesite svoje ime"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              placeholder="Vnesite svoj email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               size="lg"
             />
           </FormControl>
