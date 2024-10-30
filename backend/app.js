@@ -13,6 +13,16 @@ var mongoDB =
   dbAuth +
   '@yourvoice.beii5.mongodb.net/YourVoice?retryWrites=true&w=majority&appName=YourVoice';
 mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true });
+
+// LOKALNA POVEZAVA - MORA DELAT (ZAKOMENTIRAJ ZGORNJO KODO IN UPORABI ZAKOMENTIRANO)
+/*
+const mongoDB = 'mongodb://localhost:27017/YourVoice';
+mongoose.connect(mongoDB, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+*/
+
 mongoose.Promise = global.Promise;
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
@@ -88,10 +98,6 @@ app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
 });
 
 module.exports = app;
