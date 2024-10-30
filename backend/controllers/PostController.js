@@ -61,7 +61,7 @@ module.exports = {
         });
     },
 
-    delete: function (req, res) {
+    remove: function (req, res) {
         var id = req.params.id;
 
         PostModel.findByIdAndRemove(id, function (err, Post) {
