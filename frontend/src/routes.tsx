@@ -1,9 +1,11 @@
+// routes.tsx
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Logout from './pages/Logout';
 import Posts from './pages/Posts';
 import Profile from './pages/Profile';
 import Register from './pages/Register';
+import PostDetail from './components/PostDetail'; // Dodaj import za PostDetail
 
 export const publicRoutes = [
   { name: 'Domov', to: '/', visible: true, element: <Home /> },
@@ -15,6 +17,12 @@ export const publicRoutes = [
     element: <Register />,
   },
   { name: 'Objave', to: '/posts', visible: true, element: <Posts /> },
+  {
+    name: 'Objava podrobnosti',
+    to: '/posts/:id',
+    visible: false,
+    element: <PostDetail />,
+  },
 ];
 
 export const protectedRoutes = [
