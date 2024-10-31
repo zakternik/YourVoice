@@ -16,6 +16,7 @@ import {
 import { UserContext, UserContextType } from '../userContext';
 
 // TODO - Add validation for input fields
+// TODO - Display differend errors (from backend) for failed registration
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState<string>('');
@@ -30,9 +31,9 @@ const Login: React.FC = () => {
     e.preventDefault();
 
     try {
-      const res = await fetch('http://localhost:3001/users/login', {
+      const res = await fetch('http://localhost:3000/user/login', {
         method: 'POST',
-        credentials: 'include',
+        //credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });

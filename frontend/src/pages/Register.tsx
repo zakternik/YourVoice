@@ -15,6 +15,7 @@ import { UserContext, UserContextType } from '../userContext';
 import { useNavigate } from 'react-router-dom';
 
 // TODO - Add validation for input fields
+// TODO - Display differend errors (from backend) for failed registration
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState<string>('');
