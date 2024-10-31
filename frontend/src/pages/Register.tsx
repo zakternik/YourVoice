@@ -12,6 +12,7 @@ import {
   Checkbox,
 } from '@chakra-ui/react';
 import { UserContext, UserContextType } from '../userContext';
+import { useNavigate } from 'react-router-dom';
 
 // TODO - Add validation for input fields
 
@@ -24,6 +25,7 @@ const Register: React.FC = () => {
 
   const userContext = useContext<UserContextType>(UserContext);
   const toast = useToast();
+  const navigate = useNavigate();
 
   const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -51,6 +53,10 @@ const Register: React.FC = () => {
           duration: 3000,
           isClosable: true,
         });
+
+        setTimeout(() => {
+          navigate('/');
+        }, 2000);
       } else {
         setError('Napaka pri registraciji. Preverite vnos in poskusite znova.');
       }
@@ -117,6 +123,7 @@ const Register: React.FC = () => {
               mt={2}
               isChecked={showPassword}
               onChange={() => setShowPassword(!showPassword)}
+              required={false}
             >
               Prikaži geslo
             </Checkbox>

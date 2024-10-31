@@ -117,6 +117,7 @@ const Login: React.FC = () => {
               mt={2}
               isChecked={showPassword}
               onChange={() => setShowPassword(!showPassword)}
+              required={false}
             >
               Prikaži geslo
             </Checkbox>
