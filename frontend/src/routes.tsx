@@ -17,12 +17,6 @@ export const publicRoutes = [
     element: <Register />,
   },
   { name: 'Objave', to: '/posts', visible: true, element: <Posts /> },
-  {
-    name: 'Objava podrobnosti',
-    to: '/posts/:id',
-    visible: false,
-    element: <PostDetail />,
-  },
 ];
 
 export const protectedRoutes = [
