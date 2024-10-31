@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Modal,
   ModalOverlay,
@@ -18,23 +18,40 @@ import {
 interface AddPostModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onPostAdded: () => void;
 }
 
-const AddPostModal: React.FC<AddPostModalProps> = ({ isOpen, onClose }) => {
+const AddPostModal: React.FC<AddPostModalProps> = ({
+  isOpen,
+  onClose,
+  onPostAdded,
+}) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
   const toast = useToast();
 
+  // Ref za prvo vnosno polje
+  const titleInputRef = useRef<HTMLInputElement>(null);
+
   const handleSubmit = () => {
-    fetch('/post', {
+    fetch('http://localhost:3000/post', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title, content, category }),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
       .then(() => {
         toast({ title: 'Objava uspešno dodana!', status: 'success' });
+        setTitle('');
+        setContent('');
+        setCategory('');
+        onPostAdded();
         onClose();
       })
       .catch((error) => {
@@ -44,7 +61,11 @@ const AddPostModal: React.FC<AddPostModalProps> = ({ isOpen, onClose }) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      initialFocusRef={titleInputRef} // Nastavi fokus na prvo vnosno polje
+    >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Dodaj novo objavo</ModalHeader>
@@ -53,6 +74,7 @@ const AddPostModal: React.FC<AddPostModalProps> = ({ isOpen, onClose }) => {
           <FormControl mb={4}>
             <FormLabel>Naslov</FormLabel>
             <Input
+              ref={titleInputRef} // Ref za fokus
               placeholder="Vnesite naslov"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
