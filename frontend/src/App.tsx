@@ -7,7 +7,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import { UserContext } from './userContext';
-import Home from './pages/Home'; // Poskrbite, da je pot pravilna
+import Home from './pages/Home'; // Potrdite pravilno pot
+import Posts from './pages/Posts'; // Dodajte direktni import za Posts
 
 function App() {
   const [user, setUser] = useState<User | null>(
@@ -39,12 +40,13 @@ function App() {
         <Header />
         <main className="container">
           <Routes>
-            {/* Stran "Home" je vedno vidna */}
+            {/* Stran Home je vedno dostopna */}
             <Route path="/" element={<Home />} />
 
-            {/* Javni Routes - samo za neprijavljene */}
+            {/* Javni Routes - stran Objave vključena za vse */}
+            <Route path="/posts" element={<Posts />} />
             {publicRoutes
-              .filter((route) => route.to !== '/') // Home stran je že definirana
+              .filter((route) => route.to !== '/' && route.to !== '/posts') // Home in Objave izvzeti
               .map((route) => (
                 <Route
                   key={route.to}

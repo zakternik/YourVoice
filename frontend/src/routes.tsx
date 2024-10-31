@@ -19,6 +19,7 @@ export const publicRoutes = [
 
 export const protectedRoutes = [
   { name: 'Domov', to: '/', visible: true, element: <Home /> },
-  { name: 'Odjava', to: '/logout', visible: true, element: <Logout /> },
+  { name: 'Objave', to: '/posts', visible: true, element: <Posts /> },
   { name: 'Profil', to: '/profile', visible: true, element: <Profile /> },
+  { name: 'Odjava', to: '/logout', visible: true, element: <Logout /> },
 ];
