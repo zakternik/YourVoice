@@ -1,7 +1,15 @@
 // components/PostDetail.tsx
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Box, Heading, Text, Spinner } from '@chakra-ui/react';
+import { useParams, useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Heading,
+  Text,
+  Spinner,
+  Button,
+  Divider,
+  Flex,
+} from '@chakra-ui/react';
 
 interface Post {
   title: string;
@@ -14,9 +22,10 @@ const PostDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate(); // Hook za navigacijo nazaj
 
   useEffect(() => {
-    fetch(`http://localhost:3000/post/${id}`) // Uporabite port 3000
+    fetch(`http://localhost:3000/post/${id}`)
       .then((response) => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -34,22 +43,39 @@ const PostDetail: React.FC = () => {
   }, [id]);
 
   return (
-    <Box p={6} maxW="container.md" mx="auto">
+    <Box
+      p={8}
+      maxW="container.md"
+      mx="auto"
+      borderWidth="1px"
+      borderRadius="lg"
+      shadow="lg"
+    >
+      <Button onClick={() => navigate('/posts')} colorScheme="teal" mb={6}>
+        Nazaj na objave
+      </Button>
       {loading ? (
         <Spinner size="xl" />
       ) : post ? (
         <>
-          <Heading as="h2" size="xl" mb={4}>
+          <Heading as="h2" size="xl" mb={4} textAlign="center" color="teal.600">
             {post.title}
           </Heading>
-          <Text fontSize="sm" color="gray.500">
-            Kategorija: {post.category} | Datum:{' '}
-            {new Date(post.createdAt).toLocaleDateString()}
+          <Divider mb={4} />
+          <Flex justify="space-between" color="gray.500" fontSize="sm" mb={6}>
+            <Text>
+              Kategorija: <strong>{post.category}</strong>
+            </Text>
+            <Text>
+              Datum: <b>{new Date(post.createdAt).toLocaleDateString()}</b>
+            </Text>
+          </Flex>
+          <Text fontSize="md" lineHeight="tall" mt={4} color="gray.700">
+            {post.content}
           </Text>
-          <Text mt={4}>{post.content}</Text>
         </>
       ) : (
-        <Text>Objava ni najdena.</Text>
+        <Text color="red.500">Objava ni najdena.</Text>
       )}
     </Box>
   );
