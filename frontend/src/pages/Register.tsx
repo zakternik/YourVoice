@@ -54,10 +54,11 @@ const Register: React.FC = () => {
           duration: 3000,
           isClosable: true,
         });
-
+        /*
         setTimeout(() => {
           navigate('/');
         }, 2000);
+        */
       } else {
         setError('Napaka pri registraciji. Preverite vnos in poskusite znova.');
       }

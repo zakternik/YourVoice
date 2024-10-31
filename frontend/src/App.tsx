@@ -1,14 +1,13 @@
 // App.tsx
-import './App.css';
-import './index.css';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import React, { Dispatch, SetStateAction, useState } from 'react';
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import { publicRoutes, protectedRoutes } from './routes';
 import { User } from './interfaces/User';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import { UserContext } from './userContext';
+import Home from './pages/Home'; // Poskrbite, da je pot pravilna
 
 function App() {
   const [user, setUser] = useState<User | null>(
@@ -36,17 +35,25 @@ function App() {
 
   return (
     <BrowserRouter>
-      {/* Prenos uporabniškega stanja do Header */}
       <UserContext.Provider value={{ user, setUserContext: updateUserData }}>
         <Header />
         <main className="container">
           <Routes>
-            {/* Javni Routes */}
-            {publicRoutes.map((route) => (
-              <Route key={route.to} path={route.to} element={route.element} />
-            ))}
+            {/* Stran "Home" je vedno vidna */}
+            <Route path="/" element={<Home />} />
 
-            {/* Zaščiteni Routes */}
+            {/* Javni Routes - samo za neprijavljene */}
+            {publicRoutes
+              .filter((route) => route.to !== '/') // Home stran je že definirana
+              .map((route) => (
+                <Route
+                  key={route.to}
+                  path={route.to}
+                  element={user ? <Navigate to="/" replace /> : route.element}
+                />
+              ))}
+
+            {/* Zaščiteni Routes - samo za prijavljene */}
             {protectedRoutes.map((route) => (
               <Route
                 key={route.to}
