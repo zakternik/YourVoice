@@ -18,4 +18,8 @@ router.get('/:id', PostController.show);
 
 router.post('/', PostController.create);
 
+router.put('/:id', PostController.update);
+
+router.delete('/:id', PostController.remove);
+
 module.exports = router;
