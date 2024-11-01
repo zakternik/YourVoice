@@ -27,23 +27,6 @@ module.exports = {
         });
     },
 
-    showLogin: function (req, res) {
-        res.render('user/login');
-    },
-
-    showRegistration: function (req, res) {
-        res.render('user/register');
-    },
-
-    showProfile: function (req, res) {
-        res.render('user/profile', {userId:req.session.userId , username:req.session.username});
-    },
-
-    showLogout: function (req, res) {
-        req.session.destroy();
-        res.render('index');
-    },
-
     /**
      * UserController.show()
      */

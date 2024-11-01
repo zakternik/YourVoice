@@ -7,14 +7,6 @@ var UserController = require('../controllers/UserController.js');
  */
 router.get('/', UserController.list);
 
-router.get('/login', UserController.showLogin);
-
-router.get('/logout', UserController.showLogout);
-
-router.get('/profile', UserController.showProfile);
-
-router.get('/register', UserController.showRegistration);
-
 /*
  * GET
  */
