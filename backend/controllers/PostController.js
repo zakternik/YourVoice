@@ -1,4 +1,5 @@
 var PostModel = require('../models/PostModel');
+var CommentModel = require('../models/CommentModel');
 
 /**
  * PostController.js
@@ -24,7 +25,9 @@ module.exports = {
     show: function (req, res) {
         var id = req.params.id;
 
-        PostModel.findOne({_id: id}, function (err, Post) {
+        PostModel.findOne({_id: id})
+        .populate('comments')
+        .exec(function (err, Post) {
             if (err) {
                 return res.status(500).json({
                     message: 'Error when getting Post.',
@@ -47,7 +50,7 @@ module.exports = {
             title : req.body.title,
             content : req.body.content,
             category : req.body.category,
-            author : req.body.userId,
+            userId : req.body.userId,
         });
 
         newPost.save(function (err, Post) {
@@ -108,5 +111,76 @@ module.exports = {
 
             return res.status(204).json();
         });
+    },
+
+    addComment: async function (req, res) {
+        const postId = req.params.id;
+    
+        // Preveri, ali so potrebni podatki prisotni
+        if (!req.body.content || !req.body.userId) {
+            return res.status(400).json({
+                message: 'Content and userId are required'
+            });
+        }
+    
+        try {
+            const newComment = new CommentModel({
+                content: req.body.content,
+                userId: req.body.userId
+            });
+    
+            const comment = await newComment.save();
+            console.log('Saved Comment:', comment);
+    
+            // Dodaj komentar v objavo
+            const post = await PostModel.findByIdAndUpdate(
+                postId,
+                { $push: { comments: comment._id } },
+                { new: true }
+            )
+                .populate('comments')
+                .exec();
+    
+            // console.log('Updated Post with New Comment:', post);
+            return res.status(201).json(post);
+    
+        } catch (err) {
+            console.log('Error:', err.message || err);
+            return res.status(500).json({
+                message: 'Error when creating comment or updating post',
+                error: err.message || err
+            });
+        }
+    },
+
+    removeComment: async function (req, res) {
+        const postId = req.params.id;
+        const commentId = req.params.commentId;
+
+        try {
+            const comment = await CommentModel.findByIdAndRemove(commentId);
+
+            if (!comment) {
+                return res.status(404).json({
+                    message: 'No such comment'
+                });
+            }
+
+            const post = await PostModel.findByIdAndUpdate(
+                postId,
+                { $pull: { comments: commentId } },
+                { new: true }
+            ).populate('comments')
+            .exec();
+
+            return res.status(204).json(post);
+        }
+        catch (err) {
+            console.log('Error:', err.message || err);
+            return res.status(500).json({
+                message: 'Error when deleting comment or updating post',
+                error: err.message || err
+            });
+        }
     }
 };
