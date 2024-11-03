@@ -47,7 +47,7 @@ module.exports = {
             title : req.body.title,
             content : req.body.content,
             category : req.body.category,
-            // author : req.session.userId,
+            author : req.body.userId,
         });
 
         newPost.save(function (err, Post) {
