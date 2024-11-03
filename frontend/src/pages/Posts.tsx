@@ -1,4 +1,3 @@
-// components/Posts.tsx
 import React, { useEffect, useState, useContext } from 'react';
 import {
   Box,
@@ -20,7 +19,6 @@ const Posts: React.FC = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { user } = useContext(UserContext);
 
-  // Funkcija za nalaganje objav
   const loadPosts = () => {
     setLoading(true);
     fetch('http://localhost:3000/post')
@@ -31,7 +29,7 @@ const Posts: React.FC = () => {
         return response.json();
       })
       .then((data) => {
-        setPosts(data.reverse()); // Obrnemo vrstni red, da so nove objave na vrhu
+        setPosts(data.reverse());
         setLoading(false);
       })
       .catch((error) => {
@@ -44,9 +42,8 @@ const Posts: React.FC = () => {
     loadPosts();
   }, []);
 
-  // Funkcija za osvežitev objav po dodajanju nove objave
   const handlePostAdded = () => {
-    loadPosts(); // Osveži seznam objav
+    loadPosts();
   };
 
   return (
@@ -61,7 +58,7 @@ const Posts: React.FC = () => {
       )}
       {loading ? (
         <Spinner size="xl" />
-      ) : posts.length === 0 ? ( // Preverimo, ali je seznam objav prazen
+      ) : posts.length === 0 ? (
         <Text fontSize="lg" color="gray.500" textAlign="center" mt={8}>
           Trenutno ni nobenih objav.
         </Text>
@@ -79,6 +76,9 @@ const Posts: React.FC = () => {
               <Heading fontSize="xl">{post.title}</Heading>
               <Text mt={2} fontSize="md" color="gray.600">
                 Kategorija: {post.category}
+              </Text>
+              <Text mt={2} fontSize="sm" color="gray.500">
+                Avtor: {post?.userId?.username || 'Neznan uporabnik'}
               </Text>
               <Link to={`/posts/${post._id}`}>
                 <Button colorScheme="teal" mt={4}>

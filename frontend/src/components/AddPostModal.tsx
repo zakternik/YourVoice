@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useContext } from 'react';
+
 import {
   Modal,
   ModalOverlay,
@@ -14,6 +15,7 @@ import {
   Textarea,
   useToast,
 } from '@chakra-ui/react';
+import { UserContext } from '../userContext';
 
 interface AddPostModalProps {
   isOpen: boolean;
@@ -26,6 +28,7 @@ const AddPostModal: React.FC<AddPostModalProps> = ({
   onClose,
   onPostAdded,
 }) => {
+  const { user } = useContext(UserContext); // Pridobi trenutno prijavljenega uporabnika
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
@@ -35,10 +38,15 @@ const AddPostModal: React.FC<AddPostModalProps> = ({
   const titleInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = () => {
+    if (!user) {
+      toast({ title: 'Napaka: Uporabnik ni prijavljen.', status: 'error' });
+      return;
+    }
+
     fetch('http://localhost:3000/post', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, content, category }),
+      body: JSON.stringify({ title, content, category, userId: user._id }), // Vključi userId
     })
       .then((response) => {
         if (!response.ok) {
