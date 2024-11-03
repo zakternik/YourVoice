@@ -1,5 +1,5 @@
-import React, { useState, useRef, useContext } from 'react';
-
+// AddPostModal.tsx
+import React, { useState, useRef, useContext, useEffect } from 'react';
 import {
   Modal,
   ModalOverlay,
@@ -16,26 +16,40 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { UserContext } from '../userContext';
+import { Post } from '../interfaces/Post';
 
 interface AddPostModalProps {
   isOpen: boolean;
   onClose: () => void;
   onPostAdded: () => void;
+  post: Post | null;
 }
 
 const AddPostModal: React.FC<AddPostModalProps> = ({
   isOpen,
   onClose,
   onPostAdded,
+  post,
 }) => {
-  const { user } = useContext(UserContext); // Pridobi trenutno prijavljenega uporabnika
+  const { user } = useContext(UserContext); // Get the currently logged-in user
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
   const toast = useToast();
-
-  // Ref za prvo vnosno polje
   const titleInputRef = useRef<HTMLInputElement>(null);
+
+  // Populate fields when post is provided (for editing)
+  useEffect(() => {
+    if (post) {
+      setTitle(post.title);
+      setContent(post.content);
+      setCategory(post.category);
+    } else {
+      setTitle('');
+      setContent('');
+      setCategory('');
+    }
+  }, [post]);
 
   const handleSubmit = () => {
     if (!user) {
@@ -43,10 +57,20 @@ const AddPostModal: React.FC<AddPostModalProps> = ({
       return;
     }
 
-    fetch('http://localhost:3000/post', {
-      method: 'POST',
+    const url = post
+      ? `http://localhost:3000/post/${post._id}`
+      : 'http://localhost:3000/post';
+    const method = post ? 'PUT' : 'POST';
+
+    fetch(url, {
+      method: method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, content, category, userId: user._id }), // Vključi userId
+      body: JSON.stringify({
+        title,
+        content,
+        category,
+        userId: user._id, // Include userId
+      }),
     })
       .then((response) => {
         if (!response.ok) {
@@ -55,7 +79,12 @@ const AddPostModal: React.FC<AddPostModalProps> = ({
         return response.json();
       })
       .then(() => {
-        toast({ title: 'Objava uspešno dodana!', status: 'success' });
+        toast({
+          title: post
+            ? 'Objava uspešno posodobljena!'
+            : 'Objava uspešno dodana!',
+          status: 'success',
+        });
         setTitle('');
         setContent('');
         setCategory('');
@@ -63,8 +92,11 @@ const AddPostModal: React.FC<AddPostModalProps> = ({
         onClose();
       })
       .catch((error) => {
-        console.error('Error adding post:', error);
-        toast({ title: 'Napaka pri dodajanju objave.', status: 'error' });
+        console.error('Error adding/updating post:', error);
+        toast({
+          title: 'Napaka pri dodajanju/posodabljanju objave.',
+          status: 'error',
+        });
       });
   };
 
@@ -72,17 +104,17 @@ const AddPostModal: React.FC<AddPostModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      initialFocusRef={titleInputRef} // Nastavi fokus na prvo vnosno polje
+      initialFocusRef={titleInputRef} // Set focus on the first input field
     >
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Dodaj novo objavo</ModalHeader>
+        <ModalHeader>{post ? 'Uredi objavo' : 'Dodaj novo objavo'}</ModalHeader>
         <ModalCloseButton />
         <ModalBody pb={6}>
           <FormControl mb={4}>
             <FormLabel>Naslov</FormLabel>
             <Input
-              ref={titleInputRef} // Ref za fokus
+              ref={titleInputRef} // Ref for focus
               placeholder="Vnesite naslov"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -107,7 +139,7 @@ const AddPostModal: React.FC<AddPostModalProps> = ({
         </ModalBody>
         <ModalFooter>
           <Button colorScheme="blue" onClick={handleSubmit} mr={3}>
-            Shrani
+            {post ? 'Shrani' : 'Dodaj'}
           </Button>
           <Button onClick={onClose}>Prekliči</Button>
         </ModalFooter>
