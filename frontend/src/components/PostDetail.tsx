@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -27,6 +27,7 @@ interface User {
 }
 
 interface Comment {
+  _id: string;
   content: string;
   createdAt: string;
   userId: User;
@@ -50,7 +51,11 @@ const PostDetail: React.FC = () => {
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
 
-  useEffect(() => {
+  // Ustvarite ref za textarea
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const fetchPost = () => {
+    setLoading(true);
     fetch(`http://localhost:3000/post/${id}`)
       .then((response) => {
         if (!response.ok) {
@@ -66,6 +71,10 @@ const PostDetail: React.FC = () => {
         console.error('Napaka pri pridobivanju objave:', error);
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchPost(); // Inicialno naložite podatke o objavi
   }, [id]);
 
   const handleCommentSubmit = () => {
@@ -95,26 +104,36 @@ const PostDetail: React.FC = () => {
         }
         return response.json();
       })
-      .then((data) => {
-        // Ustvarimo novi komentar z vsemi potrebnimi podatki
-        const newCommentData: Comment = {
-          content: newComment,
-          createdAt: new Date().toISOString(),
-          userId: { username: user.username, _id: user._id },
-        };
-
-        setPost((prevPost) => {
-          if (!prevPost) return null;
-          return {
-            ...prevPost,
-            comments: [...(prevPost.comments || []), newCommentData], // Dodamo novi komentar
-          };
-        });
-        setNewComment('');
+      .then(() => {
+        setNewComment(''); // Počistite vnos
         onClose();
+        fetchPost(); // Ponovno naložite objavo, da pridobite najnovejše komentarje
       })
       .catch((error) => {
         console.error('Napaka pri dodajanju komentarja:', error);
+      });
+  };
+
+  const handleCommentDelete = (commentId: string) => {
+    if (!user) {
+      alert('Prijavite se za brisanje komentarja.');
+      return;
+    }
+
+    fetch(`http://localhost:3000/post/${id}/comment/${commentId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Napaka pri brisanju komentarja');
+        }
+        fetchPost(); // Ponovno naložite objavo, da pridobite najnovejše komentarje
+      })
+      .catch((error) => {
+        console.error('Napaka pri brisanju komentarja:', error);
       });
   };
 
@@ -172,7 +191,7 @@ const PostDetail: React.FC = () => {
                 )
                 .map((comment) => (
                   <Box
-                    key={comment.createdAt}
+                    key={comment._id}
                     p={4}
                     borderWidth="1px"
                     borderRadius="md"
@@ -183,6 +202,16 @@ const PostDetail: React.FC = () => {
                       {new Date(comment.createdAt).toLocaleString()}
                     </Text>
                     <Text>{comment.content}</Text>
+                    {user?._id === comment.userId._id && (
+                      <Button
+                        colorScheme="red"
+                        size="sm"
+                        mt={2}
+                        onClick={() => handleCommentDelete(comment._id)}
+                      >
+                        Izbriši
+                      </Button>
+                    )}
                   </Box>
                 ))}
             </VStack>
@@ -192,13 +221,18 @@ const PostDetail: React.FC = () => {
             </Text>
           )}
 
-          <Modal isOpen={isOpen} onClose={onClose}>
+          <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            initialFocusRef={textareaRef}
+          >
             <ModalOverlay />
             <ModalContent>
               <ModalHeader>Dodaj komentar</ModalHeader>
               <ModalCloseButton />
               <ModalBody>
                 <Textarea
+                  ref={textareaRef} // Povezava referenc
                   placeholder="Vnesite svoj komentar..."
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
