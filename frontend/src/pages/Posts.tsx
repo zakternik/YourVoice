@@ -8,10 +8,10 @@ import {
   Spinner,
   useDisclosure,
 } from '@chakra-ui/react';
-import { Link } from 'react-router-dom';
 import { UserContext } from '../userContext';
 import AddPostModal from '../components/AddPostModal';
 import { Post } from '../interfaces/Post';
+import { Link } from 'react-router-dom';
 
 const Posts: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -103,6 +103,11 @@ const Posts: React.FC = () => {
               <Text mt={2} fontSize="sm" color="gray.500">
                 Avtor: {post?.userId?.username || 'Neznan uporabnik'}
               </Text>
+              <Link to={`/posts/${post._id}`}>
+                <Button colorScheme="teal" mt={4}>
+                  Preberi več
+                </Button>
+              </Link>
               {user && post.userId && post.userId._id === user._id && (
                 <Box mt={4}>
                   <Button

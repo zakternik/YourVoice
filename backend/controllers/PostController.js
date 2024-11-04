@@ -27,6 +27,7 @@ module.exports = {
     var id = req.params.id;
 
     PostModel.findOne({ _id: id })
+      .populate('userId', 'username') // Dodano za pridobitev username polja iz User modela
       .populate('comments')
       .exec(function (err, Post) {
         if (err) {

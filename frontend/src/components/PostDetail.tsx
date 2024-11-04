@@ -1,4 +1,3 @@
-// components/PostDetail.tsx
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -11,11 +10,17 @@ import {
   Flex,
 } from '@chakra-ui/react';
 
+interface User {
+  username: string;
+  _id: string;
+}
+
 interface Post {
   title: string;
   content: string;
   category: string;
   createdAt: string;
+  userId?: User; // Dodana opcijska lastnost za uporabnika
 }
 
 const PostDetail: React.FC = () => {
@@ -70,6 +75,10 @@ const PostDetail: React.FC = () => {
               Datum: <b>{new Date(post.createdAt).toLocaleDateString()}</b>
             </Text>
           </Flex>
+          <Text color="gray.500" fontSize="sm" mb={4}>
+            Avtor:{' '}
+            <strong>{post.userId?.username || 'Neznan uporabnik'}</strong>
+          </Text>
           <Text fontSize="md" lineHeight="tall" mt={4} color="gray.700">
             {post.content}
           </Text>
