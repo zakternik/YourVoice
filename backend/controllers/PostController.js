@@ -23,13 +23,17 @@ module.exports = {
       });
   },
 
+  // Posodobljena metoda za prikaz posamezne objave
   show: function (req, res) {
     var id = req.params.id;
 
     PostModel.findOne({ _id: id })
-      .populate('userId', 'username') // Dodano za pridobitev username polja iz User modela
-      .populate('comments')
-      .exec(function (err, Post) {
+      .populate('userId', 'username') // Populacija za prikaz avtorja
+      .populate({
+        path: 'comments',
+        populate: { path: 'userId', select: 'username' }, // Populacija uporabnikov v komentarjih
+      })
+      .exec(function (err, post) {
         if (err) {
           return res.status(500).json({
             message: 'Error when getting Post.',
@@ -37,13 +41,13 @@ module.exports = {
           });
         }
 
-        if (!Post) {
+        if (!post) {
           return res.status(404).json({
             message: 'No such Post',
           });
         }
 
-        return res.json(Post);
+        return res.json(post);
       });
   },
 
