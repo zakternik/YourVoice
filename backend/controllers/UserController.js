@@ -13,7 +13,7 @@ module.exports = {
      * UserController.list()
      */
     list: function (req, res) {
-        UserModel.find.select('-password').exec(function (err, Users) {
+        UserModel.find().select('-password').exec(function (err, Users) {
             if (err) {
                 return res.status(500).json({
                     message: 'Error when getting User.',
@@ -21,8 +21,8 @@ module.exports = {
                 });
             }
 
-            //return res.json(Users);
-            return res.render('user/list', {data:Users, userId:req.session.userId , username:req.session.username} );
+            return res.json(Users);
+            //return res.render('user/list', {data:Users, userId:req.session.userId , username:req.session.username} );
 
         });
     },
@@ -46,8 +46,8 @@ module.exports = {
                     message: 'No such User'
                 });
             }
-
-            return res.render('user/profile', User);
+            return res.json(User);
+            //return res.render('user/profile', User);
         });
     },
 
