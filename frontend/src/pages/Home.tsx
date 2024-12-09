@@ -45,7 +45,6 @@ const Home: React.FC = () => {
               colorScheme="blue"
               rounded="full"
               px={6}
-              rightIcon={<FontAwesomeIcon icon={faDoorOpen} />}
               _hover={{
                 bg: 'blue.300',
               }}
