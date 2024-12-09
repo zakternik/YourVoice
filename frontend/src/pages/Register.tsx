@@ -12,7 +12,6 @@ import {
   Checkbox,
 } from '@chakra-ui/react';
 import { UserContext, UserContextType } from '../userContext';
-import { useNavigate } from 'react-router-dom';
 
 // TODO - Add validation for input fields
 // TODO - Display differend errors (from backend) for failed registration
@@ -26,7 +25,6 @@ const Register: React.FC = () => {
 
   const userContext = useContext<UserContextType>(UserContext);
   const toast = useToast();
-  const navigate = useNavigate();
 
   const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
