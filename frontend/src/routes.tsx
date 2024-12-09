@@ -5,7 +5,6 @@ import Logout from './pages/Logout';
 import Posts from './pages/Posts';
 import Profile from './pages/Profile';
 import Register from './pages/Register';
-import PostDetail from './components/PostDetail'; // Dodaj import za PostDetail
 
 export const publicRoutes = [
   { name: 'Domov', to: '/', visible: true, element: <Home /> },
