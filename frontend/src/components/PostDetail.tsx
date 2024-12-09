@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useRef } from 'react';
+import React, { useEffect, useState, useContext, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -54,28 +54,28 @@ const PostDetail: React.FC = () => {
   // Ustvarite ref za textarea
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const fetchPost = () => {
+  const fetchPost = useCallback(() => {
     setLoading(true);
     fetch(`http://localhost:3000/post/${id}`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then((data) => {
-        setPost(data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error('Napaka pri pridobivanju objave:', error);
-        setLoading(false);
-      });
-  };
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then((data) => {
+          setPost(data);
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error('Napaka pri pridobivanju objave:', error);
+          setLoading(false);
+        });
+  }, [id]);
 
   useEffect(() => {
-    fetchPost(); // Inicialno naložite podatke o objavi
-  }, [id]);
+    fetchPost();
+  }, [fetchPost]);
 
   const handleCommentSubmit = () => {
     if (newComment.trim() === '') {
