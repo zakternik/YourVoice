@@ -29,6 +29,20 @@ const Register: React.FC = () => {
   const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    if (!username.trim() || !password.trim() || !email.trim()) {
+      setError('Prosimo, izpolnite vsa polja.');
+      return;
+    } else if (password.length < 8) {
+      setError('Geslo mora vsebovati vsaj 8 znakov.');
+      return;
+    }  else if (!/[A-Z]/.test(password)) {
+      setError('Geslo mora vsebovati vsaj eno veliko črko.');
+      return;
+    } else if (!/\d/.test(password)) {
+      setError('Geslo mora vsebovati vsaj eno številko.');
+      return;
+    }
+
     try {
       const res = await fetch('http://localhost:3000/user', {
         method: 'POST',
