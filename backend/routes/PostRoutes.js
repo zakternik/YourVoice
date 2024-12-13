@@ -21,6 +21,8 @@ router.post("/", PostController.create);
 router.put("/:id", PostController.update);
 
 router.delete("/:id", PostController.archive);
+router.put("/:id/unarchive", PostController.unArchive);
+router.delete("/:id/delete", PostController.remove);
 
 router.post("/:id/comment", PostController.addComment);
 router.delete("/:id/comment/:commentId", PostController.removeComment);

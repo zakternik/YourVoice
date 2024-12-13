@@ -109,9 +109,6 @@ const Posts: React.FC = () => {
               <Text mt={2} fontSize="md" color="gray.600">
                 Kategorija: {post.category}
               </Text>
-              <Text mt={2} fontSize="md" color="gray.600">
-                ID: {post._id}
-              </Text>
               <Text mt={2} fontSize="sm" color="gray.500">
                 Avtor: {post?.userId?.username || 'Neznan uporabnik'}
               </Text>

@@ -8,4 +8,16 @@ export interface Post {
     _id: string;
     username: string;
   };
+  upvotes: number;
+  downvotes: number;
+  comments?: {
+    _id: string;
+    content: string;
+    createdAt: string;
+    userId: {
+      _id: string;
+      username: string;
+    };
+  }[];
+  archived: boolean;
 }

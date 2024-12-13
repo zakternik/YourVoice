@@ -12,10 +12,9 @@ module.exports = {
   list: async function (req, res) {
     try {
       const posts = await PostModel.find({ archived: false })
-        .select("-createdAt -updatedAt") // Izključi 'createdAt' in 'updatedAt'
+        .select(" -updatedAt")
         .populate("userId", "username")
         .sort({ createdAt: -1 }); // Obratni vrstni red (najprej najnovejši)
-      // Dodano za pridobitev username polja iz User modela
 
       res.json(posts);
     } catch (err) {
@@ -85,6 +84,54 @@ module.exports = {
           title: req.body.title,
           content: req.body.content,
           category: req.body.category,
+        },
+        { new: true } // Vrne posodobljen dokument
+      );
+
+      if (!updatedPost) {
+        return res.status(404).json({
+          message: "No such post",
+        });
+      }
+
+      return res.json(updatedPost);
+    } catch (err) {
+      return res.status(500).json({
+        message: "Error when updating post.",
+        error: err.message,
+      });
+    }
+  },
+
+  remove: async function (req, res) {
+    const id = req.params.id;
+
+    try {
+      const deletedPost = await PostModel.findByIdAndDelete(id);
+
+      if (!deletedPost) {
+        return res.status(404).json({
+          message: "No such post",
+        });
+      }
+
+      return res.json(deletedPost);
+    } catch (err) {
+      return res.status(500).json({
+        message: "Error when deleting post.",
+        error: err.message,
+      });
+    }
+  },
+
+  unArchive: async function (req, res) {
+    const id = req.params.id;
+
+    try {
+      const updatedPost = await PostModel.findByIdAndUpdate(
+        { _id: id },
+        {
+          archived: false,
         },
         { new: true } // Vrne posodobljen dokument
       );

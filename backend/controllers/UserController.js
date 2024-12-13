@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt"); // Ensure bcrypt is imported
 const SALT_WORK_FACTOR = 10; // Define salt work factor
 
 var UserModel = require("../models/UserModel.js");
+const PostModel = require("../models/PostModel.js");
 /**
  * UserController.js
  *
@@ -44,6 +45,32 @@ module.exports = {
     } catch (err) {
       return res.status(500).json({
         message: "Error when getting User.",
+        error: err.message,
+      });
+    }
+  },
+
+  /**
+   * UserController.showPosts()
+   */
+  showPosts: async function (req, res) {
+    const id = req.params.id;
+
+    try {
+      const userPosts = await PostModel.find({ userId: id })
+        .select("-password -updatedAt")
+        .sort({ createdAt: -1 });
+
+      if (!userPosts) {
+        return res.status(404).json({
+          message: "No posts found for this user",
+        });
+      }
+
+      return res.json(userPosts);
+    } catch (err) {
+      return res.status(500).json({
+        message: "Error when getting users posts.",
         error: err.message,
       });
     }
