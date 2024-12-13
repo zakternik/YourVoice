@@ -7,6 +7,7 @@ import {
   Text,
   Spinner,
   useDisclosure,
+  useToast,
 } from '@chakra-ui/react';
 import { UserContext } from '../userContext';
 import AddPostModal from '../components/AddPostModal';
@@ -19,6 +20,7 @@ const Posts: React.FC = () => {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null); // Track selected post for editing
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { user } = useContext(UserContext);
+  const toast = useToast();
 
   const loadPosts = async () => {
     setLoading(true);
@@ -28,7 +30,7 @@ const Posts: React.FC = () => {
         throw new Error('Network response was not ok');
       }
       const data = await response.json();
-      setPosts(data.reverse()); // Obrne vrstni red objav
+      setPosts(data);
     } catch (error) {
       console.error('Napaka pri pridobivanju objav:', error);
     } finally {
@@ -50,20 +52,30 @@ const Posts: React.FC = () => {
     onOpen(); // Open the modal
   };
 
-  const handleDeletePost = (id: string) => {
-    fetch(`http://localhost:3000/post/${id}`, {
-      method: 'DELETE',
-    })
-      .then((response) => {
-        if (response.ok) {
-          loadPosts(); // Reload posts after deletion
-        } else {
-          console.error('Napaka pri brisanju objave');
-        }
-      })
-      .catch((error) => {
-        console.error('Napaka pri brisanju objave:', error);
+  const handleArchivePost = async (id: string) => {
+    try {
+      const response = await fetch(`http://localhost:3000/post/${id}`, {
+        method: 'DELETE',
       });
+
+      if (response.ok) {
+        loadPosts(); // Reload posts after deletion
+        toast({
+          title: 'Objava je bila uspešno arhivirana.',
+          status: 'info',
+        });
+      } else {
+        toast({
+          title: 'Napaka pri brisanju objave.',
+          status: 'error',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Napaka pri brisanju objave.',
+        status: 'error',
+      });
+    }
   };
 
   return (
@@ -97,6 +109,9 @@ const Posts: React.FC = () => {
               <Text mt={2} fontSize="md" color="gray.600">
                 Kategorija: {post.category}
               </Text>
+              <Text mt={2} fontSize="md" color="gray.600">
+                ID: {post._id}
+              </Text>
               <Text mt={2} fontSize="sm" color="gray.500">
                 Avtor: {post?.userId?.username || 'Neznan uporabnik'}
               </Text>
@@ -116,9 +131,9 @@ const Posts: React.FC = () => {
                   </Button>
                   <Button
                     colorScheme="red"
-                    onClick={() => handleDeletePost(post._id)} // Delete post
+                    onClick={() => handleArchivePost(post._id)} // Delete post
                   >
-                    Izbriši
+                    Arhiviraj
                   </Button>
                 </Box>
               )}

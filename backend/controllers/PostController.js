@@ -11,10 +11,11 @@ var CommentModel = require("../models/CommentModel");
 module.exports = {
   list: async function (req, res) {
     try {
-      const posts = await PostModel.find({ archived: false }).populate(
-        "userId",
-        "username"
-      ); // Dodano za pridobitev username polja iz User modela
+      const posts = await PostModel.find({ archived: false })
+        .select("-createdAt -updatedAt") // Izključi 'createdAt' in 'updatedAt'
+        .populate("userId", "username")
+        .sort({ createdAt: -1 }); // Obratni vrstni red (najprej najnovejši)
+      // Dodano za pridobitev username polja iz User modela
 
       res.json(posts);
     } catch (err) {
@@ -103,11 +104,15 @@ module.exports = {
     }
   },
 
-  remove: async function (req, res) {
+  archive: async function (req, res) {
     const id = req.params.id;
 
     try {
-      const post = await PostModel.findByIdAndRemove(id);
+      console.log("Got ID:", id);
+      const post = await PostModel.findByIdAndUpdate(
+        { _id: id },
+        { archived: true }
+      );
 
       if (!post) {
         return res.status(404).json({

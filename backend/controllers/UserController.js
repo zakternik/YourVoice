@@ -1,212 +1,209 @@
-const bcrypt = require('bcrypt'); // Ensure bcrypt is imported
+const bcrypt = require("bcrypt"); // Ensure bcrypt is imported
 const SALT_WORK_FACTOR = 10; // Define salt work factor
 
-var UserModel = require('../models/UserModel.js');
+var UserModel = require("../models/UserModel.js");
 /**
  * UserController.js
  *
  * @description :: Server-side logic for managing Users.
  */
 module.exports = {
+  /**
+   * UserController.list()
+   */
+  list: async function (req, res) {
+    try {
+      // Poiščemo vse uporabnike, brez gesel
+      const users = await UserModel.find().select("-password");
 
-    /**
-     * UserController.list()
-     */
-    list: function (req, res) {
-        UserModel.find().select('-password').exec(function (err, Users) {
-            if (err) {
-                return res.status(500).json({
-                    message: 'Error when getting User.',
-                    error: err
-                });
-            }
+      return res.json(users);
+    } catch (err) {
+      return res.status(500).json({
+        message: "Error when getting User.",
+        error: err.message,
+      });
+    }
+  },
 
-            return res.json(Users);
-            //return res.render('user/list', {data:Users, userId:req.session.userId , username:req.session.username} );
+  /**
+   * UserController.show()
+   */
+  show: async function (req, res) {
+    const id = req.params.id;
 
+    try {
+      const user = await UserModel.findOne({ _id: id }).select("-password");
+
+      if (!user) {
+        return res.status(404).json({
+          message: "No such User",
         });
-    },
+      }
 
-    /**
-     * UserController.show()
-     */
-    show: function (req, res) {
-        var id = req.params.id;
+      return res.json(user);
+    } catch (err) {
+      return res.status(500).json({
+        message: "Error when getting User.",
+        error: err.message,
+      });
+    }
+  },
 
-        UserModel.findOne({_id: id}).select('-password').exec(function (err, User) {
-            if (err) {
-                return res.status(500).json({
-                    message: 'Error when getting User.',
-                    error: err
-                });
-            }
+  /**
+   * UserController.create()
+   */
+  create: async function (req, res) {
+    try {
+      // Ustvarimo novega uporabnika
+      const newUser = new UserModel({
+        username: req.body.username,
+        password: req.body.password,
+        email: req.body.email,
+      });
 
-            if (!User) {
-                return res.status(404).json({
-                    message: 'No such User'
-                });
-            }
-            return res.json(User);
-            //return res.render('user/profile', User);
+      const user = await newUser.save();
+
+      // Odstranimo geslo iz odgovora
+      user.password = undefined;
+
+      return res.status(201).json(user);
+    } catch (err) {
+      // Obravnava napake za podvojen ključ
+      if (err.code === 11000) {
+        const field = err.keyPattern.username ? "Username" : "Email";
+        return res.status(409).json({
+          message: `${field} already taken. Please choose another.`,
+          error: err.message,
         });
-    },
+      }
 
-    /**
-     * UserController.create()
-     */
-    create: function (req, res) {
-        var newUser = new UserModel({
-            username: req.body.username,
-            password: req.body.password,
-            email: req.body.email
-        });
-    
-        newUser.save(function (err, User) {
-            if (err) {
-                // Check for duplicate key error
-                if (err.code === 11000) {
-                    const field = err.keyPattern.username ? 'Username' : 'Email';
-                    return res.status(409).json({
-                        message: `${field} already taken. Please choose another.`,
-                        error: err
-                    });
-                }
-    
-                return res.status(500).json({
-                    message: 'Error when creating User',
-                    error: err
-                });
-            }
-    
-            // Remove password from the response
-            User.password = undefined;
-            return res.status(201).json(User);
-        });
-    },
+      return res.status(500).json({
+        message: "Error when creating User",
+        error: err.message,
+      });
+    }
+  },
 
-    login: function (req, res, next) {
-    // First, find the user by username
-    UserModel.findOne({ username: req.body.username }, function (error, user) {
-        if (error || !user) {
-            return res.status(401).json({
-                message: 'Wrong username or password',
-                error: new Error("Wrong username or password")
-            });
+  login: async function (req, res) {
+    try {
+      // Poiščemo uporabnika po uporabniškem imenu
+      const user = await UserModel.findOne({ username: req.body.username });
+
+      if (!user) {
+        return res.status(401).json({
+          message: "Wrong username or password",
+          error: new Error("Wrong username or password"),
+        });
+      }
+
+      // Preverimo, če se geslo ujema z geslom v bazi
+      const isMatch = await bcrypt.compare(req.body.password, user.password);
+
+      if (!isMatch) {
+        return res.status(401).json({
+          message: "Wrong username or password",
+          error: new Error("Wrong username or password"),
+        });
+      }
+
+      req.session.userId = user._id;
+      req.session.username = user.username;
+
+      user.password = undefined;
+
+      return res.json(user);
+    } catch (err) {
+      console.error("Login error:", err.message || err);
+      return res.status(500).json({
+        message: "Error during login",
+        error: err.message || err,
+      });
+    }
+  },
+  /**
+   * UserController.update()
+   */
+  update: async function (req, res) {
+    const id = req.params.id;
+
+    try {
+      // Poiščemo uporabnika po ID-ju
+      const user = await UserModel.findById(id);
+
+      if (!user) {
+        return res.status(404).json({
+          message: "No such User",
+        });
+      }
+
+      // Pripravimo objekt za posodobitev
+      const updates = {};
+
+      // Preverimo, ali je geslo v telesu zahtevka
+      if (req.body.password) {
+        // Validacija novega gesla
+        const passwordRegex = /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
+        if (!passwordRegex.test(req.body.password)) {
+          return res.status(400).json({
+            message:
+              "Geslo mora biti dolgo vsaj 8 znakov in vsebovati vsaj eno veliko črko in eno številko.",
+          });
         }
 
-        // Compare the provided password with the hashed password
-        bcrypt.compare(req.body.password, user.password, function (err, isMatch) {
-            if (err || !isMatch) {
-                return res.status(401).json({
-                    message: 'Wrong username or password',
-                    error: new Error("Wrong username or password")
-                });
-            } else {
-                // If password matches, create session
-                req.session.userId = user._id;
-                req.session.username = user.username;
+        // Hashiranje novega gesla
+        const hash = await bcrypt.hash(req.body.password, SALT_WORK_FACTOR);
+        updates.password = hash;
+      }
 
-                // Optionally, remove password from user object before sending response
-                user.password = undefined;
+      // Posodobimo bio in avatar (če sta na voljo)
+      updates.bio = req.body.bio || user.bio;
+      updates.avatar = req.body.avatar || user.avatar;
 
-                return res.json(user);
-            }
+      // Posodobimo uporabniški profil
+      const result = await UserModel.updateOne({ _id: id }, updates, {
+        runValidators: true,
+      });
+
+      // Preverimo, ali je posodobitev uspela
+      if (result.nModified === 0) {
+        return res.status(400).json({
+          message: "No changes made to the user profile.",
         });
-    });
-    },
+      }
 
-    /**
-     * UserController.update()
-     */
-    update: function (req, res) {
-        const id = req.params.id;
-
-        // Check if the user exists first
-        UserModel.findOne({ _id: id }, function (err, user) {
-            if (err) {
-                return res.status(500).json({
-                    message: 'Error when getting User',
-                    error: err
-                });
-            }
-    
-            if (!user) {
-                return res.status(404).json({
-                    message: 'No such User'
-                });
-            }
-    
-            // Prepare updates object
-            const updates = {};
-            
-            // Check if password needs to be updated
-            if (req.body.password) {
-                // Validate the new password against your rules
-                if (!/^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(req.body.password)) {
-                    return res.status(400).json({
-                        message: 'Geslo mora biti dolgo vsaj 8 znakov in vsebovati vsaj eno veliko črko in eno številko.'
-                    });
-                }
-    
-                // Hash the new password
-                bcrypt.hash(req.body.password, SALT_WORK_FACTOR, function(err, hash) {
-                    if (err) {
-                        return res.status(500).json({
-                            message: 'Error while hashing password.',
-                            error: err
-                        });
-                    }
-                    // Update password with the hashed value
-                    updates.password = hash;
-    
-                    // Now, update bio and avatar if provided
-                    updates.bio = req.body.bio || user.bio; // Retain existing bio if not provided
-                    updates.avatar = req.body.avatar || user.avatar; // Retain existing avatar if not provided
-    
-                    // Proceed to update user with hashed password
-                    UserModel.updateOne({ _id: id }, updates, { runValidators: false }, function (err, result) {
-                        if (err) {
-                            return res.status(500).json({
-                                message: 'Error when updating User.',
-                                error: err
-                            });
-                        }
-                        return res.json({ message: 'User updated successfully' });
-                    });
-                });
-            } else {
-                // If no password is being updated, only update bio and avatar
-                updates.bio = req.body.bio || user.bio; // Use existing bio if not provided
-                updates.avatar = req.body.avatar || user.avatar; // Use existing avatar if not provided
-    
-                UserModel.updateOne({ _id: id }, updates, { runValidators: true }, function (err, result) {
-                    if (err) {
-                        return res.status(500).json({
-                            message: 'Error when updating User.',
-                            error: err
-                        });
-                    }
-                    return res.json({ message: 'User updated successfully' });
-                });
-            }
-        });
-    },
-
-    /**
-     * UserController.remove()
-     */
-    remove: function (req, res) {
-        var id = req.params.id;
-
-        UserModel.findByIdAndRemove(id, function (err, User) {
-            if (err) {
-                return res.status(500).json({
-                    message: 'Error when deleting the User.',
-                    error: err
-                });
-            }
-
-            return res.status(204).json();
-        });
+      return res.json({ message: "User updated successfully" });
+    } catch (err) {
+      console.error("Error during user update:", err.message || err);
+      return res.status(500).json({
+        message: "Error when updating User.",
+        error: err.message || err,
+      });
     }
+  },
+
+  /**
+   * UserController.remove()
+   */
+  remove: async function (req, res) {
+    const id = req.params.id;
+
+    try {
+      // Poiščemo in odstranimo uporabnika po ID-ju
+      const user = await UserModel.findByIdAndRemove(id);
+
+      if (!user) {
+        return res.status(404).json({
+          message: "No such User",
+        });
+      }
+
+      return res.status(204).json(); // Uspešno odstranjeno, brez vsebine v odgovoru
+    } catch (err) {
+      console.error("Error during user deletion:", err.message || err);
+      return res.status(500).json({
+        message: "Error when deleting the User.",
+        error: err.message || err,
+      });
+    }
+  },
 };

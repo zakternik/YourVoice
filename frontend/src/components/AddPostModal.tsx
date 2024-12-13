@@ -57,6 +57,12 @@ const AddPostModal: React.FC<AddPostModalProps> = ({
       return;
     }
 
+    // Preverjanje, če so vsi potrebni podatki prisotni
+    if (!title || !content || !category) {
+      toast({ title: 'Vsa polja morajo biti izpolnjena.', status: 'error' });
+      return;
+    }
+
     const url = post
       ? `http://localhost:3000/post/${post._id}`
       : 'http://localhost:3000/post';
