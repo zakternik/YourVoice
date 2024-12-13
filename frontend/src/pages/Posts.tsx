@@ -20,23 +20,20 @@ const Posts: React.FC = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { user } = useContext(UserContext);
 
-  const loadPosts = () => {
+  const loadPosts = async () => {
     setLoading(true);
-    fetch('http://localhost:3000/post')
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then((data) => {
-        setPosts(data.reverse());
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error('Napaka pri pridobivanju objav:', error);
-        setLoading(false);
-      });
+    try {
+      const response = await fetch('http://localhost:3000/post');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setPosts(data.reverse()); // Obrne vrstni red objav
+    } catch (error) {
+      console.error('Napaka pri pridobivanju objav:', error);
+    } finally {
+      setLoading(false); // Poskrbi, da se `setLoading` vedno pokliče
+    }
   };
 
   useEffect(() => {

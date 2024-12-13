@@ -1,5 +1,5 @@
-var PostModel = require('../models/PostModel');
-var CommentModel = require('../models/CommentModel');
+var PostModel = require("../models/PostModel");
+var CommentModel = require("../models/CommentModel");
 
 /**
  * PostController.js
@@ -9,151 +9,159 @@ var CommentModel = require('../models/CommentModel');
  */
 
 module.exports = {
-  list: function (req, res) {
-    PostModel.find()
-      .populate('userId', 'username') // Dodano za pridobitev username polja iz User modela
-      .exec(function (err, Posts) {
-        if (err) {
-          return res.status(500).json({
-            message: 'Error when getting Post.',
-            error: err,
-          });
-        }
-        return res.json(Posts);
+  list: async function (req, res) {
+    try {
+      const posts = await PostModel.find({ archived: false }).populate(
+        "userId",
+        "username"
+      ); // Dodano za pridobitev username polja iz User modela
+
+      res.json(posts);
+    } catch (err) {
+      res.status(500).json({
+        message: "Error when getting Post.",
+        error: err,
       });
+    }
   },
 
   // Posodobljena metoda za prikaz posamezne objave
-  show: function (req, res) {
-    var id = req.params.id;
+  show: async function (req, res) {
+    const id = req.params.id;
 
-    PostModel.findOne({ _id: id })
-      .populate('userId', 'username') // Populacija za prikaz avtorja
-      .populate({
-        path: 'comments',
-        populate: { path: 'userId', select: 'username' }, // Populacija uporabnikov v komentarjih
-      })
-      .exec(function (err, post) {
-        if (err) {
-          return res.status(500).json({
-            message: 'Error when getting Post.',
-            error: err,
-          });
-        }
-
-        if (!post) {
-          return res.status(404).json({
-            message: 'No such Post',
-          });
-        }
-
-        return res.json(post);
-      });
-  },
-
-  create: function (req, res) {
-    var newPost = new PostModel({
-      title: req.body.title,
-      content: req.body.content,
-      category: req.body.category,
-      userId: req.body.userId,
-    });
-
-    newPost.save(function (err, Post) {
-      if (err) {
-        return res.status(500).json({
-          message: 'Error when creating Post',
-          error: err,
+    try {
+      const post = await PostModel.findOne({ _id: id })
+        .populate("userId", "username") // Populacija za prikaz avtorja
+        .populate({
+          path: "comments",
+          populate: { path: "userId", select: "username" }, // Populacija uporabnikov v komentarjih
         });
-      }
-      return res.status(201).json(Post);
-    });
-  },
-
-  update: function (req, res) {
-    var id = req.params.id;
-
-    PostModel.findOne({ _id: id }, function (err, post) {
-      if (err) {
-        return res.status(500).json({
-          message: 'Error when getting post',
-          error: err,
-        });
-      }
 
       if (!post) {
         return res.status(404).json({
-          message: 'No such post',
+          message: "No such Post",
         });
       }
 
-      post.title = req.body.title ? req.body.title : post.title;
-      post.content = req.body.content ? req.body.content : post.content;
-      post.category = req.body.category ? req.body.category : post.category;
-
-      post.save(function (err, post) {
-        if (err) {
-          return res.status(500).json({
-            message: 'Error when updating post.',
-            error: err,
-          });
-        }
-
-        return res.json(post);
+      return res.json(post);
+    } catch (err) {
+      return res.status(500).json({
+        message: "Error when getting Post.",
+        error: err.message,
       });
-    });
+    }
   },
 
-  remove: function (req, res) {
-    var id = req.params.id;
+  create: async function (req, res) {
+    try {
+      // Ustvarjanje novega dokumenta
+      const newPost = new PostModel({
+        title: req.body.title,
+        content: req.body.content,
+        category: req.body.category,
+        userId: req.body.userId,
+      });
 
-    PostModel.findByIdAndRemove(id, function (err, Post) {
-      if (err) {
-        return res.status(500).json({
-          message: 'Error when deleting the Post.',
-          error: err,
+      // Shranjevanje dokumenta v bazo
+      const savedPost = await newPost.save();
+      return res.status(201).json(savedPost); // Vrne uspešno ustvarjen dokument
+    } catch (err) {
+      // Obvladovanje napak
+      return res.status(500).json({
+        message: "Error when creating Post",
+        error: err.message,
+      });
+    }
+  },
+
+  update: async function (req, res) {
+    const id = req.params.id;
+
+    try {
+      const updatedPost = await PostModel.findByIdAndUpdate(
+        id,
+        {
+          title: req.body.title,
+          content: req.body.content,
+          category: req.body.category,
+        },
+        { new: true } // Vrne posodobljen dokument
+      );
+
+      if (!updatedPost) {
+        return res.status(404).json({
+          message: "No such post",
         });
       }
 
-      return res.status(204).json();
-    });
+      return res.json(updatedPost);
+    } catch (err) {
+      return res.status(500).json({
+        message: "Error when updating post.",
+        error: err.message,
+      });
+    }
+  },
+
+  remove: async function (req, res) {
+    const id = req.params.id;
+
+    try {
+      const post = await PostModel.findByIdAndRemove(id);
+
+      if (!post) {
+        return res.status(404).json({
+          message: "No such Post",
+        });
+      }
+
+      return res.status(204).send(); // Uporabimo `send` za 204 status brez vsebine
+    } catch (err) {
+      return res.status(500).json({
+        message: "Error when deleting the Post.",
+        error: err.message,
+      });
+    }
   },
 
   addComment: async function (req, res) {
     const postId = req.params.id;
 
-    // Preveri, ali so potrebni podatki prisotni
     if (!req.body.content || !req.body.userId) {
       return res.status(400).json({
-        message: 'Content and userId are required',
+        message: "Content and userId are required",
       });
     }
 
     try {
+      // Ustvari in shrani nov komentar
       const newComment = new CommentModel({
         content: req.body.content,
         userId: req.body.userId,
       });
-
       const comment = await newComment.save();
-      console.log('Saved Comment:', comment);
 
-      // Dodaj komentar v objavo
+      // Dodaj ID komentarja v objavo
       const post = await PostModel.findByIdAndUpdate(
         postId,
         { $push: { comments: comment._id } },
         { new: true }
-      )
-        .populate('comments')
-        .exec();
+      ).populate({
+        path: "comments",
+        populate: { path: "userId", select: "username" }, // Populiramo tudi uporabnika komentarja
+      });
 
-      // console.log('Updated Post with New Comment:', post);
+      if (!post) {
+        return res.status(404).json({
+          message: "No such Post to add a comment",
+        });
+      }
+
       return res.status(201).json(post);
     } catch (err) {
-      console.log('Error:', err.message || err);
       return res.status(500).json({
-        message: 'Error when creating comment or updating post',
-        error: err.message || err,
+        message: "Error when creating comment or updating post",
+        error: err.message,
       });
     }
   },
@@ -163,28 +171,36 @@ module.exports = {
     const commentId = req.params.commentId;
 
     try {
+      // Odstranimo komentar
       const comment = await CommentModel.findByIdAndRemove(commentId);
 
       if (!comment) {
         return res.status(404).json({
-          message: 'No such comment',
+          message: "No such comment",
         });
       }
 
+      // Posodobimo objavo, da odstranimo ID komentarja
       const post = await PostModel.findByIdAndUpdate(
         postId,
         { $pull: { comments: commentId } },
         { new: true }
-      )
-        .populate('comments')
-        .exec();
+      ).populate({
+        path: "comments",
+        populate: { path: "userId", select: "username" },
+      });
 
-      return res.status(204).json(post);
+      if (!post) {
+        return res.status(404).json({
+          message: "No such Post to remove the comment",
+        });
+      }
+
+      return res.status(200).json(post); // Posredujemo posodobljen objekt
     } catch (err) {
-      console.log('Error:', err.message || err);
       return res.status(500).json({
-        message: 'Error when deleting comment or updating post',
-        error: err.message || err,
+        message: "Error when deleting comment or updating post",
+        error: err.message,
       });
     }
   },
