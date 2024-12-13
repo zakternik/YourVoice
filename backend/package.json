@@ -1,9 +1,12 @@
 {
   "name": "your-voice-backend",
   "version": "0.0.0",
+  "main": "dist/server.js",
   "scripts": {
-    "start": "node app.js",
-    "start:dev": "nodemon app.js"
+    "build": "run; tsc",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "start": "npm run build; node dist/server.js",
+    "start:dev": "npx tsx watch src/server.ts"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
