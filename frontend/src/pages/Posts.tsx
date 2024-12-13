@@ -7,6 +7,7 @@ import {
   Text,
   Spinner,
   useDisclosure,
+  useToast,
 } from '@chakra-ui/react';
 import { UserContext } from '../userContext';
 import AddPostModal from '../components/AddPostModal';
@@ -19,24 +20,22 @@ const Posts: React.FC = () => {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null); // Track selected post for editing
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { user } = useContext(UserContext);
+  const toast = useToast();
 
-  const loadPosts = () => {
+  const loadPosts = async () => {
     setLoading(true);
-    fetch('http://localhost:3000/post')
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then((data) => {
-        setPosts(data.reverse());
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error('Napaka pri pridobivanju objav:', error);
-        setLoading(false);
-      });
+    try {
+      const response = await fetch('http://localhost:3000/post');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setPosts(data);
+    } catch (error) {
+      console.error('Napaka pri pridobivanju objav:', error);
+    } finally {
+      setLoading(false); // Poskrbi, da se `setLoading` vedno pokliče
+    }
   };
 
   useEffect(() => {
@@ -53,20 +52,30 @@ const Posts: React.FC = () => {
     onOpen(); // Open the modal
   };
 
-  const handleDeletePost = (id: string) => {
-    fetch(`http://localhost:3000/post/${id}`, {
-      method: 'DELETE',
-    })
-      .then((response) => {
-        if (response.ok) {
-          loadPosts(); // Reload posts after deletion
-        } else {
-          console.error('Napaka pri brisanju objave');
-        }
-      })
-      .catch((error) => {
-        console.error('Napaka pri brisanju objave:', error);
+  const handleArchivePost = async (id: string) => {
+    try {
+      const response = await fetch(`http://localhost:3000/post/${id}`, {
+        method: 'DELETE',
       });
+
+      if (response.ok) {
+        loadPosts(); // Reload posts after deletion
+        toast({
+          title: 'Objava je bila uspešno arhivirana.',
+          status: 'info',
+        });
+      } else {
+        toast({
+          title: 'Napaka pri brisanju objave.',
+          status: 'error',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Napaka pri brisanju objave.',
+        status: 'error',
+      });
+    }
   };
 
   return (
@@ -119,9 +128,9 @@ const Posts: React.FC = () => {
                   </Button>
                   <Button
                     colorScheme="red"
-                    onClick={() => handleDeletePost(post._id)} // Delete post
+                    onClick={() => handleArchivePost(post._id)} // Delete post
                   >
-                    Izbriši
+                    Arhiviraj
                   </Button>
                 </Box>
               )}
