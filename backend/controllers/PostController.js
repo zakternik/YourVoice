@@ -224,7 +224,7 @@ module.exports = {
 
     try {
       // Odstranimo komentar
-      const comment = await CommentModel.findByIdAndRemove(commentId);
+      const comment = await CommentModel.findByIdAndDelete(commentId);
 
       if (!comment) {
         return res.status(404).json({

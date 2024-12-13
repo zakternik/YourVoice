@@ -216,7 +216,7 @@ module.exports = {
 
     try {
       // Poiščemo in odstranimo uporabnika po ID-ju
-      const user = await UserModel.findByIdAndRemove(id);
+      const user = await UserModel.findByIdAndDelete(id);
 
       if (!user) {
         return res.status(404).json({
