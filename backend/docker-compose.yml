@@ -1,0 +1,29 @@
+name: your-voice-backend
+networks:
+  app-network:
+    driver: bridge
+
+services:
+  rest-api:
+    build:
+      context: .
+      dockerfile: scripts/docker/node.Dockerfile
+      args:
+        NODE_ENV: ${ENV}
+        APP_PORT: ${APP_PORT}
+    restart: always
+    ports:
+      - ${APP_PORT}:${APP_PORT}
+    volumes:
+      - .:/app/rest-api
+      - ./node_modules:/app/rest-api/node_modules
+    environment:
+      - NODE_ENV=${ENV}
+    networks:
+      - app-network
+
+volumes:
+  mongo-data:
+    driver: local
+
+
