@@ -17,6 +17,7 @@
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.1",
     "@types/react-router-dom": "^5.3.3",
+    "chakra-multiselect": "^0.4.13",
     "chakra-ui-steps": "^1.7.3",
     "dayjs": "^1.11.13",
     "framer-motion": "^11.13.3",

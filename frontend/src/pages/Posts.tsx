@@ -42,6 +42,10 @@ const Posts: React.FC = () => {
     }
   };
 
+  const getCategories = (categories: string): string[] => {
+    return categories.split(',').map((category) => category.trim());
+  };
+
   useEffect(() => {
     loadPosts();
   }, []);
@@ -110,9 +114,17 @@ const Posts: React.FC = () => {
               _hover={{ bg: 'gray.50' }}
             >
               <Heading fontSize="xl">{post.title}</Heading>
-              <Text mt={2} fontSize="md" color="gray.600">
+              {/* Categories */}
+              <div className="d-flex gap-1">
+                {getCategories(post.category).map((category: string) => (
+                  <span key={category} className="badge text-bg-primary">
+                    {category}
+                  </span>
+                ))}
+              </div>
+              {/* <Text mt={2} fontSize="md" color="gray.600">
                 Kategorija: {post.category}
-              </Text>
+              </Text> */}
               <Text mt={2} fontSize="sm" color="gray.500">
                 Avtor: {post?.userId?.username || 'Neznan uporabnik'}
               </Text>
