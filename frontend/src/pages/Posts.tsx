@@ -116,6 +116,16 @@ const Posts: React.FC = () => {
               _hover={{ bg: 'gray.50' }}
             >
               <Heading fontSize="xl">{post.title}</Heading>
+                {/* Display image if it exists */}
+                {post.image && (
+                <Image
+                  src={`data:image/jpeg;base64,${post.image}`}
+                  alt={post.title}
+                  mt={4}
+                  mb={4}
+                  borderRadius="md"
+                />
+              )}
               {/* Categories */}
               <div className="d-flex gap-1">
                 {getCategories(post.category).map((category: string) => (

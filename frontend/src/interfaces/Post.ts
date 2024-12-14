@@ -20,6 +20,7 @@ export interface Post {
       username: string;
     };
   }[];
+  image?: string
   archived: boolean;
   createdAt: string;
 }

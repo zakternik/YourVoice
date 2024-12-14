@@ -1,4 +1,3 @@
-// AddPostModal.tsx
 import React, { useState, useRef, useContext, useEffect, FC } from 'react';
 import {
   Modal,
@@ -60,9 +59,8 @@ const AddPostModal: React.FC<AddPostModalProps> = ({
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
-  const [options, setOptions] = useState<{ label: string; value: string }[]>(
-    []
-  );
+  const [options, setOptions] = useState<{ label: string; value: string }[]>([]);
+  const [image, setImage] = useState<File | null>(null);
   const toast = useToast();
   const titleInputRef = useRef<HTMLInputElement>(null);
 
@@ -89,6 +87,12 @@ const AddPostModal: React.FC<AddPostModalProps> = ({
     }
   }, [post]);
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImage(e.target.files[0]);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!user) {
       toast({ title: 'Napaka: Uporabnik ni prijavljen.', status: 'error' });
@@ -112,16 +116,19 @@ const AddPostModal: React.FC<AddPostModalProps> = ({
       : 'http://localhost:3000/post';
     const method = post ? 'PUT' : 'POST';
 
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('content', content);
+    formData.append('category', categoryOptionsString);
+    formData.append('userId', user!._id); // Include userId
+    if (image) {
+      formData.append('image', image);
+    }
+
     try {
       const response = await fetch(url, {
         method: method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          content,
-          category: categoryOptionsString,
-          userId: user!._id, // Include userId
-        }),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -139,6 +146,7 @@ const AddPostModal: React.FC<AddPostModalProps> = ({
       setContent('');
       setCategory('');
       setOptions([]);
+      setImage(null);
 
       // Notify parent components
       if (onPostAdded) onPostAdded();
@@ -178,13 +186,6 @@ const AddPostModal: React.FC<AddPostModalProps> = ({
               value={category}
               onChange={(e) => setCategory(e.target.value)}
             />
-            {/* <MultiSelect
-              options={options}
-              value={value}
-              label="Choose or create items"
-              onChange={onChange}
-              create
-            /> */}
             <StatefulMultiSelect
               options={options}
               label="Choose or create multiple items"
@@ -221,6 +222,10 @@ const AddPostModal: React.FC<AddPostModalProps> = ({
               value={content}
               onChange={(e) => setContent(e.target.value)}
             />
+          </FormControl>
+          <FormControl mb={4}>
+            <FormLabel>Slika</FormLabel>
+            <Input type="file" accept="image/*" onChange={handleImageChange} />
           </FormControl>
         </ModalBody>
         <ModalFooter>
