@@ -6,4 +6,5 @@ export interface User {
   password: string;
   name: string;
   createdAt: string;
+  bio?: string
 }

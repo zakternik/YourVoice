@@ -7,7 +7,7 @@ import {
     Input,
     Button,
     Stack,
-    useToast,
+    useToast, Textarea,
 } from '@chakra-ui/react';
 import { UserContext } from '../userContext';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +16,7 @@ const EditProfile: React.FC = () => {
     const { user } = useContext(UserContext);
     const [username, setUsername] = useState(user?.username || '');
     const [email, setEmail] = useState(user?.email || '');
+    const [bio, setBio] = useState(user?.bio || '');
     const navigate = useNavigate();
     const toast = useToast();
 
@@ -29,7 +30,7 @@ const EditProfile: React.FC = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username, email }),
+                body: JSON.stringify({ username, email, bio}),
             });
 
             if (!response.ok) {
@@ -72,6 +73,14 @@ const EditProfile: React.FC = () => {
                 <FormControl>
                     <FormLabel>E-pošta</FormLabel>
                     <Input value={email} onChange={(e) => setEmail(e.target.value)} />
+                </FormControl>
+                <FormControl>
+                    <FormLabel>O meni (Bio)</FormLabel>
+                    <Textarea
+                        value={bio}
+                        onChange={(e) => setBio(e.target.value)}
+                        placeholder="Napišite nekaj o sebi..."
+                    />
                 </FormControl>
                 <Stack direction="row" spacing={4}>
                     <Button colorScheme="teal" onClick={handleSave}>
