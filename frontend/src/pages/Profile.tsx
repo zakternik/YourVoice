@@ -17,33 +17,23 @@ import UserArchivedPosts from '../components/UserPosts';
 
 const Profile: React.FC = () => {
   const { user, setUserContext  } = useContext(UserContext);
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchUserData = async () => {
+        const fetchUser = async () => {
+            if (!user?._id) return;
             try {
-                const response = await fetch(`http://localhost:3000/user/${user?._id}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                });
-
-                if (!response.ok) {
-                    throw new Error('Napaka pri pridobivanju podatkov uporabnika.');
-                }
-
+                const response = await fetch(`http://localhost:3000/user/${user._id}`);
+                if (!response.ok) throw new Error('Failed to fetch user data.');
                 const updatedUser = await response.json();
-                setUserContext(updatedUser); // Posodobimo uporabniški kontekst
+                setUserContext(updatedUser); // Posodobi UserContext
             } catch (error) {
-                console.error('Napaka pri osveževanju podatkov:', error);
-            } finally {
-                setLoading(false);
+                console.error('Error fetching user data:', error);
             }
         };
-        fetchUserData();
-    }, [user, setUserContext]);
+
+        fetchUser();
+    }, [user?._id]);
 
   if (!user) {
     return (
@@ -84,6 +74,12 @@ const Profile: React.FC = () => {
                 </Text>
                 <Text fontSize="md">{user.email}</Text>
               </Box>
+                <Box>
+                    <Text fontSize="lg" fontWeight="bold">
+                        Bio
+                    </Text>
+                    <Text fontSize="md">{user.bio}</Text>
+                </Box>
               <Box>
                 <Text fontSize="lg" fontWeight="bold">
                   Datum registracije:
