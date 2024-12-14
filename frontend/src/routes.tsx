@@ -5,6 +5,7 @@ import Logout from './pages/Logout';
 import Posts from './pages/Posts';
 import Profile from './pages/Profile';
 import Register from './pages/Register';
+import Edit from './pages/EditProfile';
 
 export const publicRoutes = [
   { name: 'Domov', to: '/', visible: true, element: <Home /> },
@@ -23,4 +24,5 @@ export const protectedRoutes = [
   { name: 'Objave', to: '/posts', visible: true, element: <Posts /> },
   { name: 'Profil', to: '/profile', visible: true, element: <Profile /> },
   { name: 'Odjava', to: '/logout', visible: true, element: <Logout /> },
+  { name: 'Uredi', to: '/edit-profile', visible: true, element: <Edit /> },
 ];

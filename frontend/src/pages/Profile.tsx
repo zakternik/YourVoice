@@ -74,9 +74,14 @@ const Profile: React.FC = () => {
           </TabPanel>
         </TabPanels>
       </Tabs>
-      <Button mt={6} colorScheme="teal" onClick={() => navigate('/')}>
-        Domov
-      </Button>
+        <Box mt={6} display="flex" justifyContent="space-between">
+            <Button colorScheme="teal" onClick={() => navigate('/')}>
+                Domov
+            </Button>
+            <Button colorScheme="blue" onClick={() => navigate('/edit-profile')}>
+                Uredi profil
+            </Button>
+        </Box>
     </Box>
   );
 };

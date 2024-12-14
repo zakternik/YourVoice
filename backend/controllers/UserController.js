@@ -151,7 +151,8 @@ module.exports = {
    * UserController.update()
    */
   update: async function (req, res) {
-    const id = req.params.id;
+    const { id } = req.params; // ID iz URL-ja
+    const { username, email, password } = req.body;
 
     try {
       // Poiščemo uporabnika po ID-ju
@@ -163,35 +164,28 @@ module.exports = {
         });
       }
 
-      // Pripravimo objekt za posodobitev
       const updates = {};
+      if (username) updates.username = username;
+      if (email) updates.email = email;
 
-      // Preverimo, ali je geslo v telesu zahtevka
-      if (req.body.password) {
-        // Validacija novega gesla
+      if (password) {
         const passwordRegex = /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
-        if (!passwordRegex.test(req.body.password)) {
+        if (!passwordRegex.test(password)) {
           return res.status(400).json({
-            message:
-              "Geslo mora biti dolgo vsaj 8 znakov in vsebovati vsaj eno veliko črko in eno številko.",
+            message: "Geslo mora biti dolgo vsaj 8 znakov, vsebovati vsaj eno veliko črko in eno številko.",
           });
         }
 
-        // Hashiranje novega gesla
-        const hash = await bcrypt.hash(req.body.password, SALT_WORK_FACTOR);
+        const bcrypt = require("bcryptjs");
+        const SALT_WORK_FACTOR = 10;
+        const hash = await bcrypt.hash(password, SALT_WORK_FACTOR);
         updates.password = hash;
       }
 
-      // Posodobimo bio in avatar (če sta na voljo)
-      updates.bio = req.body.bio || user.bio;
-      updates.avatar = req.body.avatar || user.avatar;
-
-      // Posodobimo uporabniški profil
       const result = await UserModel.updateOne({ _id: id }, updates, {
         runValidators: true,
       });
 
-      // Preverimo, ali je posodobitev uspela
       if (result.nModified === 0) {
         return res.status(400).json({
           message: "No changes made to the user profile.",
