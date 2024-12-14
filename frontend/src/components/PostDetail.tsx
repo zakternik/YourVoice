@@ -25,6 +25,7 @@ import {
   Textarea,
   useDisclosure,
   useToast,
+  Image,
 } from '@chakra-ui/react';
 import { UserContext } from '../userContext';
 import { PlusIcon } from 'lucide-react';
@@ -48,6 +49,7 @@ interface Post {
   createdAt: string;
   userId?: User;
   comments?: Comment[];
+  image?: string; // Add the image property
 }
 
 const PostDetail: React.FC = () => {
@@ -212,6 +214,18 @@ const PostDetail: React.FC = () => {
             Avtor:{' '}
             <strong>{post.userId?.username || 'Neznan uporabnik'}</strong>
           </Text>
+          {/* Display image if it exists */}
+          {post.image && (
+            <Flex justifyContent="center" alignItems="center">
+            <Image
+              src={`data:image/jpeg;base64,${post.image}`}
+              alt={post.title}
+              mt={4}
+              mb={4}
+              borderRadius="md"
+            />
+          </Flex>
+          )}
           <Text fontSize="md" lineHeight="tall" mt={4} color="gray.700">
             {post.content}
           </Text>

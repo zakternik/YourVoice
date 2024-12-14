@@ -1,6 +1,10 @@
 var PostModel = require("../models/PostModel");
 var CommentModel = require("../models/CommentModel");
+var multer = require("multer");
+var fs = require("fs");
 
+var storage = multer.memoryStorage();
+var upload = multer({ storage: storage });
 /**
  * PostController.js
  *
@@ -52,15 +56,24 @@ module.exports = {
     }
   },
 
-  create: async function (req, res) {
-    try {
-      // Ustvarjanje novega dokumenta
-      const newPost = new PostModel({
-        title: req.body.title,
-        content: req.body.content,
-        category: req.body.category,
-        userId: req.body.userId,
-      });
+  create: [
+    upload.single("image"), 
+    async function (req, res) {
+      try {
+        let image = null;
+
+        if (req.file) {
+          image = req.file.buffer.toString("base64"); 
+        }
+
+        // Ustvarjanje novega dokumenta
+        const newPost = new PostModel({
+          title: req.body.title,
+          content: req.body.content,
+          category: req.body.category,
+          userId: req.body.userId,
+          image: image, 
+        });
 
       // Shranjevanje dokumenta v bazo
       const savedPost = await newPost.save();
@@ -73,6 +86,7 @@ module.exports = {
       });
     }
   },
+],
 
   update: async function (req, res) {
     const id = req.params.id;
