@@ -13,6 +13,8 @@ import { UserContext } from '../userContext';
 import AddPostModal from '../components/AddPostModal';
 import { Post } from '../interfaces/Post';
 import { Link } from 'react-router-dom';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 
 const Posts: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -21,6 +23,8 @@ const Posts: React.FC = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { user } = useContext(UserContext);
   const toast = useToast();
+
+  dayjs.extend(relativeTime);
 
   const loadPosts = async () => {
     setLoading(true);
@@ -117,23 +121,28 @@ const Posts: React.FC = () => {
                   Preberi več
                 </Button>
               </Link>
-              {user && post.userId && post.userId._id === user._id && (
-                <Box mt={4}>
-                  <Button
-                    colorScheme="green"
-                    mr={3}
-                    onClick={() => handleEditPost(post)} // Edit post
-                  >
-                    Uredi
-                  </Button>
-                  <Button
-                    colorScheme="red"
-                    onClick={() => handleArchivePost(post._id)} // Delete post
-                  >
-                    Arhiviraj
-                  </Button>
-                </Box>
-              )}
+              <div className="d-flex justify-content-between">
+                {user && post.userId && post.userId._id === user._id && (
+                  <div className="d-flex align-items-center">
+                    <Button
+                      colorScheme="green"
+                      mr={3}
+                      onClick={() => handleEditPost(post)} // Edit post
+                    >
+                      Uredi
+                    </Button>
+                    <Button
+                      colorScheme="red"
+                      onClick={() => handleArchivePost(post._id)} // Delete post
+                    >
+                      Arhiviraj
+                    </Button>
+                  </div>
+                )}
+                <Text mt={4} fontSize="sm" color="gray.500">
+                  Posted: {dayjs(post.createdAt).fromNow()}
+                </Text>
+              </div>
             </Box>
           ))}
         </Stack>

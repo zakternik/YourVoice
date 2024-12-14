@@ -20,4 +20,5 @@ export interface Post {
     };
   }[];
   archived: boolean;
+  createdAt: string;
 }
