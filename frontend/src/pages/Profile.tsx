@@ -1,24 +1,49 @@
-// components/Profile.tsx
-import React, { useContext } from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
-  Box,
-  Heading,
-  Text,
-  Button,
-  Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
-  VStack,
+    Box,
+    Heading,
+    Text,
+    Button,
+    Tabs,
+    TabList,
+    TabPanels,
+    Tab,
+    TabPanel,
+    VStack,
 } from '@chakra-ui/react';
 import { UserContext } from '../userContext';
 import { useNavigate } from 'react-router-dom';
 import UserArchivedPosts from '../components/UserPosts';
 
 const Profile: React.FC = () => {
-  const { user } = useContext(UserContext);
+  const { user, setUserContext  } = useContext(UserContext);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const response = await fetch(`http://localhost:3000/user/${user?._id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error('Napaka pri pridobivanju podatkov uporabnika.');
+                }
+
+                const updatedUser = await response.json();
+                setUserContext(updatedUser); // Posodobimo uporabniški kontekst
+            } catch (error) {
+                console.error('Napaka pri osveževanju podatkov:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchUserData();
+    }, [user, setUserContext]);
 
   if (!user) {
     return (
