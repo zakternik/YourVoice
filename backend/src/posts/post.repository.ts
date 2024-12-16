@@ -10,3 +10,36 @@ export const findPostById = async (postId: string | Types.ObjectId) =>
       path: 'comments',
       populate: { path: 'user' },
     });
+
+export const createUserPost = async (params: {
+  userId: string | Types.ObjectId;
+  title: string;
+  content: string;
+  category: string;
+}) =>
+  PostEntity.create({
+    user: params.userId,
+    title: params.title,
+    content: params.content,
+    category: params.category,
+  });
+
+export const updateUserPost = async (params: {
+  userId: string | Types.ObjectId;
+  title: string;
+  content: string;
+  category: string;
+}) =>
+  PostEntity.updateOne(
+    { user: params.userId },
+    {
+      title: params.title,
+      content: params.content,
+      category: params.category,
+    },
+  );
+
+export const deleteUserPost = async (params: {
+  userId: string | Types.ObjectId;
+  postId: string | Types.ObjectId;
+}) => PostEntity.deleteOne({ user: params.userId, _id: params.postId });

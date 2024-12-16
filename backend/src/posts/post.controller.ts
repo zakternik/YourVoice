@@ -1,7 +1,12 @@
 import type { Request, Response } from 'express';
 import { PostEntity } from '../_common/entities/index.js';
 import { HttpStatusCode } from '../_common/utils/index.js';
-import { postsList } from './post.repository.js';
+import {
+  createUserPost,
+  deleteUserPost,
+  postsList,
+  updateUserPost,
+} from './post.repository.js';
 
 export const getPostList = async (req: Request, res: Response) => {
   const posts = await postsList();
@@ -17,102 +22,53 @@ export const getPostById = async (req: Request, res: Response) => {
     .populate('comments');
 };
 
-//   // Posodobljena metoda za prikaz posamezne objave
-//   show: function (req, res) {
-//     var id = req.params.id;
-//
-//     PostModel.findOne({ _id: id })
-//       .populate('userId', 'username') // Populacija za prikaz avtorja
-//       .populate({
-//         path: 'comments',
-//         populate: { path: 'userId', select: 'username' }, // Populacija uporabnikov v komentarjih
-//       })
-//       .exec(function (err, post) {
-//         if (err) {
-//           return res.status(500).json({
-//             message: 'Error when getting Post.',
-//             error: err,
-//           });
-//         }
-//
-//         if (!post) {
-//           return res.status(404).json({
-//             message: 'No such Post',
-//           });
-//         }
-//
-//         return res.json(post);
-//       });
-//   },
-//
-//   create: function (req, res) {
-//     var newPost = new PostModel({
-//       title: req.body.title,
-//       content: req.body.content,
-//       category: req.body.category,
-//       userId: req.body.userId,
-//     });
-//
-//     newPost.save(function (err, Post) {
-//       if (err) {
-//         return res.status(500).json({
-//           message: 'Error when creating Post',
-//           error: err,
-//         });
-//       }
-//       return res.status(201).json(Post);
-//     });
-//   },
-//
-//   update: function (req, res) {
-//     var id = req.params.id;
-//
-//     PostModel.findOne({ _id: id }, function (err, post) {
-//       if (err) {
-//         return res.status(500).json({
-//           message: 'Error when getting post',
-//           error: err,
-//         });
-//       }
-//
-//       if (!post) {
-//         return res.status(404).json({
-//           message: 'No such post',
-//         });
-//       }
-//
-//       post.title = req.body.title ? req.body.title : post.title;
-//       post.content = req.body.content ? req.body.content : post.content;
-//       post.category = req.body.category ? req.body.category : post.category;
-//
-//       post.save(function (err, post) {
-//         if (err) {
-//           return res.status(500).json({
-//             message: 'Error when updating post.',
-//             error: err,
-//           });
-//         }
-//
-//         return res.json(post);
-//       });
-//     });
-//   },
-//
-//   remove: function (req, res) {
-//     var id = req.params.id;
-//
-//     PostModel.findByIdAndRemove(id, function (err, Post) {
-//       if (err) {
-//         return res.status(500).json({
-//           message: 'Error when deleting the Post.',
-//           error: err,
-//         });
-//       }
-//
-//       return res.status(204).json();
-//     });
-//   },
-//
+export const createPost = async (req: Request, res: Response) => {
+  const title = req.body.title;
+  const content = req.body.title;
+  const category = req.body.title;
+
+  const post = await createUserPost({
+    title: title,
+    content: content,
+    category: category,
+    userId: req.user!.id,
+  });
+
+  res.status(HttpStatusCode.CREATED).json({
+    post: post,
+  });
+};
+
+export const updatePost = async (req: Request, res: Response) => {
+  const title = req.body.title;
+  const content = req.body.title;
+  const category = req.body.title;
+
+  const post = await updateUserPost({
+    title: title,
+    content: content,
+    category: category,
+    userId: req.user!.id,
+  });
+
+  res.status(HttpStatusCode.OK).json({
+    post: post,
+  });
+};
+
+export const deletePost = async (req: Request, res: Response) => {
+  const id = req.body.id;
+
+  const deleteResult = await deleteUserPost({
+    userId: req.user!.id,
+    postId: id,
+  });
+
+  res.status(HttpStatusCode.OK).json({
+    result: deleteResult,
+  });
+};
+
 //   addComment: async function (req, res) {
 //     const postId = req.params.id;
 //
