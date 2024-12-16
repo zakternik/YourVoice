@@ -1,10 +1,10 @@
 import type { Request, Response } from 'express';
-import { PostEntity } from '../_common/entities/index.js';
 import { HttpStatusCode } from '../_common/utils/index.js';
 import {
   addCommentToPost,
   createUserPost,
   deleteUserPost,
+  findPostById,
   postsList,
   removeCommentFromPost,
   updateUserPost,
@@ -18,10 +18,8 @@ export const getPostList = async (req: Request, res: Response) => {
 };
 
 export const getPostById = async (req: Request, res: Response) => {
-  const id = req.params.id;
-  const post = await PostEntity.findById(id)
-    .populate('user')
-    .populate('comments');
+  const id = req.params.id ?? '';
+  const post = await findPostById(id);
 
   res.status(HttpStatusCode.OK).json({
     post: post,

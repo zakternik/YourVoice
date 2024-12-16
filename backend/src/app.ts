@@ -2,7 +2,7 @@ import express from 'express';
 import 'express-async-errors';
 
 import { cors, globalErrorHandler } from './_common/middlewares/index.js';
-import postRoutes from './posts/post.routes.js';
+import postRoutes from './post/post.routes.js';
 
 const app = express();
 
