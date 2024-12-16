@@ -6,16 +6,17 @@ import {
   getPostList,
   updatePost,
 } from './post.controller.js';
+import { isAuthGuard } from '../_common/middlewares/index.js';
 
 const router = Router();
 
 router.get('/', getPostList);
 router.get('/:id', getPostById);
 
-router.post('/', createPost);
-router.put('/:id', updatePost);
+router.post('/', [isAuthGuard], createPost);
+router.put('/:id', [isAuthGuard], updatePost);
 
-router.delete('/:id', deletePost);
+router.delete('/:id', [isAuthGuard], deletePost);
 
 // router.post('/:id/comment', PostController.addComment);
 // router.delete('/:id/comment/:commentId', PostController.removeComment);
