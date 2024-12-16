@@ -1,4 +1,4 @@
-var mongoose = require('mongoose');
+var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
 var PostSchema = new Schema({
@@ -7,7 +7,7 @@ var PostSchema = new Schema({
   category: { type: String, required: true },
   userId: {
     type: Schema.Types.ObjectId,
-    ref: 'users',
+    ref: "users",
     required: true,
   },
   upvotes: { type: Number, default: 0 },
@@ -15,11 +15,13 @@ var PostSchema = new Schema({
   comments: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'comments',
+      ref: "comments",
     },
   ],
+  image: { type: String },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
+  archived: { type: Boolean, default: false },
 });
 
-module.exports = mongoose.model('posts', PostSchema);
+module.exports = mongoose.model("posts", PostSchema);

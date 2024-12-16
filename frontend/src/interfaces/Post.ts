@@ -7,5 +7,20 @@ export interface Post {
   userId: {
     _id: string;
     username: string;
+    avatar?: string
   };
+  upvotes: number;
+  downvotes: number;
+  comments?: {
+    _id: string;
+    content: string;
+    createdAt: string;
+    userId: {
+      _id: string;
+      username: string;
+    };
+  }[];
+  image?: string
+  archived: boolean;
+  createdAt: string;
 }

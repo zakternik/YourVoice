@@ -5,8 +5,11 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
 import { Steps } from 'chakra-ui-steps';
+import { MultiSelectTheme } from 'chakra-multiselect';
 
-const theme = extendTheme({ components: { Steps } });
+const theme = extendTheme({
+  components: { Steps, MultiSelect: MultiSelectTheme },
+});
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement

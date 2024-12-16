@@ -12,7 +12,6 @@ import {
   Checkbox,
 } from '@chakra-ui/react';
 import { UserContext, UserContextType } from '../userContext';
-import { useNavigate } from 'react-router-dom';
 
 // TODO - Add validation for input fields
 // TODO - Display differend errors (from backend) for failed registration
@@ -26,10 +25,23 @@ const Register: React.FC = () => {
 
   const userContext = useContext<UserContextType>(UserContext);
   const toast = useToast();
-  const navigate = useNavigate();
 
   const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!username.trim() || !password.trim() || !email.trim()) {
+      setError('Prosimo, izpolnite vsa polja.');
+      return;
+    } else if (password.length < 8) {
+      setError('Geslo mora vsebovati vsaj 8 znakov.');
+      return;
+    }  else if (!/[A-Z]/.test(password)) {
+      setError('Geslo mora vsebovati vsaj eno veliko črko.');
+      return;
+    } else if (!/\d/.test(password)) {
+      setError('Geslo mora vsebovati vsaj eno številko.');
+      return;
+    }
 
     try {
       const res = await fetch('http://localhost:3000/user', {

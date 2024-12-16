@@ -15,35 +15,55 @@ import {
 } from '@chakra-ui/react';
 import { UserContext, UserContextType } from '../userContext';
 
-// TODO - Add validation for input fields
-// TODO - Display differend errors (from backend) for failed registration
-
 const Login: React.FC = () => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const [validationError, setValidationError] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const userContext = useContext<UserContextType>(UserContext);
   const toast = useToast();
 
+  const validateInputs = (): boolean => {
+    if (!username.trim()) {
+      setValidationError('Prosimo, vnesite uporabniško ime.');
+      return false;
+    }
+    if (!password.trim()) {
+      setValidationError('Prosimo, vnesite geslo.');
+      return false;
+    }
+    setValidationError('');
+    return true;
+  };
+
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!validateInputs()) {
+      return;
+    }
 
     try {
       const res = await fetch('http://localhost:3000/user/login', {
         method: 'POST',
-        //credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
-
+    
       if (!res.ok) {
-        throw new Error('Network response was not ok');
+        const errorData = await res.json();
+        if (errorData.message) {
+          setError("Nepravilno uporabniško ime ali geslo");
+        } else {
+          throw new Error('Network response was not ok');
+        }
+        return;
       }
-
+    
       const data = await res.json();
-
+    
       if (data && data._id) {
         userContext.setUserContext(data);
         toast({
@@ -54,7 +74,7 @@ const Login: React.FC = () => {
           isClosable: true,
         });
       } else {
-        setError('Nepravilno uporabniško ime ali geslo');
+        setError('Nepravilno uporabniško ime ali geslo.');
         setUsername('');
         setPassword('');
       }
@@ -123,6 +143,12 @@ const Login: React.FC = () => {
               Prikaži geslo
             </Checkbox>
           </FormControl>
+
+          {validationError && (
+            <Text color="red.500" fontSize="sm" textAlign="center">
+              {validationError}
+            </Text>
+          )}
 
           {error && (
             <Text color="red.500" fontSize="sm" textAlign="center">

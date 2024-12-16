@@ -5,10 +5,10 @@ import Logout from './pages/Logout';
 import Posts from './pages/Posts';
 import Profile from './pages/Profile';
 import Register from './pages/Register';
-import PostDetail from './components/PostDetail'; // Dodaj import za PostDetail
+import Edit from './pages/EditProfile';
 
 export const publicRoutes = [
-  { name: 'Domov', to: '/', visible: true, element: <Home /> },
+  { name: 'Domov', to: '/', visible: false, element: <Home /> },
   { name: 'Prijava', to: '/login', visible: true, element: <Login /> },
   {
     name: 'Registracija',
@@ -20,8 +20,9 @@ export const publicRoutes = [
 ];
 
 export const protectedRoutes = [
-  { name: 'Domov', to: '/', visible: true, element: <Home /> },
+  { name: 'Domov', to: '/', visible: false, element: <Home /> },
   { name: 'Objave', to: '/posts', visible: true, element: <Posts /> },
   { name: 'Profil', to: '/profile', visible: true, element: <Profile /> },
   { name: 'Odjava', to: '/logout', visible: true, element: <Logout /> },
+  { name: 'Uredi', to: '/edit-profile', visible: false, element: <Edit /> },
 ];

@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useContext, useRef } from 'react';
+import React, {
+  useEffect,
+  useState,
+  useContext,
+  useRef,
+  useCallback,
+} from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -18,8 +24,11 @@ import {
   ModalFooter,
   Textarea,
   useDisclosure,
+  useToast,
+  Image,
 } from '@chakra-ui/react';
 import { UserContext } from '../userContext';
+import { PlusIcon } from 'lucide-react';
 
 interface User {
   username: string;
@@ -40,6 +49,7 @@ interface Post {
   createdAt: string;
   userId?: User;
   comments?: Comment[];
+  image?: string; // Add the image property
 }
 
 const PostDetail: React.FC = () => {
@@ -50,11 +60,12 @@ const PostDetail: React.FC = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
+  const toast = useToast();
 
   // Ustvarite ref za textarea
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const fetchPost = () => {
+  const fetchPost = useCallback(() => {
     setLoading(true);
     fetch(`http://localhost:3000/post/${id}`)
       .then((response) => {
@@ -71,15 +82,19 @@ const PostDetail: React.FC = () => {
         console.error('Napaka pri pridobivanju objave:', error);
         setLoading(false);
       });
-  };
-
-  useEffect(() => {
-    fetchPost(); // Inicialno naložite podatke o objavi
   }, [id]);
 
-  const handleCommentSubmit = () => {
+  useEffect(() => {
+    fetchPost();
+  }, [fetchPost]);
+
+  const handleCommentSubmit = async () => {
+    // Check if the comment is empty
     if (newComment.trim() === '') {
-      alert('Komentar ne sme biti prazen.');
+      toast({
+        title: 'Komentar ne more biti prazen.',
+        status: 'warning',
+      });
       return;
     }
 
@@ -88,53 +103,83 @@ const PostDetail: React.FC = () => {
       return;
     }
 
-    fetch(`http://localhost:3000/post/${id}/comment`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        content: newComment,
-        userId: user._id,
-      }),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Napaka pri dodajanju komentarja');
-        }
-        return response.json();
-      })
-      .then(() => {
-        setNewComment(''); // Počistite vnos
-        onClose();
-        fetchPost(); // Ponovno naložite objavo, da pridobite najnovejše komentarje
-      })
-      .catch((error) => {
-        console.error('Napaka pri dodajanju komentarja:', error);
+    try {
+      const response = await fetch(`http://localhost:3000/post/${id}/comment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: newComment,
+          userId: user._id,
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error('Napaka pri dodajanju komentarja');
+      }
+
+      // const data = await response.json();
+
+      setNewComment('');
+      onClose();
+
+      fetchPost();
+
+      toast({
+        title: 'Komentar dodan',
+        status: 'success',
+      });
+    } catch (error) {
+      toast({
+        title: 'Napaka pri dodajanju komentarja',
+        status: 'error',
+      });
+      console.error(error);
+    }
   };
 
-  const handleCommentDelete = (commentId: string) => {
+  const handleCommentDelete = async (commentId: string) => {
     if (!user) {
-      alert('Prijavite se za brisanje komentarja.');
+      toast({
+        title: 'Prijavite se za brisanje komentarja.',
+        status: 'warning',
+      });
       return;
     }
 
-    fetch(`http://localhost:3000/post/${id}/comment/${commentId}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Napaka pri brisanju komentarja');
+    try {
+      const response = await fetch(
+        `http://localhost:3000/post/${id}/comment/${commentId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         }
-        fetchPost(); // Ponovno naložite objavo, da pridobite najnovejše komentarje
-      })
-      .catch((error) => {
-        console.error('Napaka pri brisanju komentarja:', error);
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        // Assuming the API may return an error message, use it if available
+        throw new Error(errorData.message || 'Napaka pri brisanju komentarja');
+      }
+
+      toast({
+        title: 'Komentar je bil uspešno izbrisan.',
+        status: 'success',
       });
+
+      // Reload the post and its comments after deletion
+      fetchPost(); // You could add a loading indicator here to improve UX
+    } catch (error: any) {
+      console.error('Napaka pri brisanju komentarja:', error);
+
+      toast({
+        title: error.message || 'Napaka pri brisanju komentarja.',
+        status: 'error',
+      });
+    }
   };
 
   return (
@@ -169,17 +214,31 @@ const PostDetail: React.FC = () => {
             Avtor:{' '}
             <strong>{post.userId?.username || 'Neznan uporabnik'}</strong>
           </Text>
+          {/* Display image if it exists */}
+          {post.image && (
+            <Flex justifyContent="center" alignItems="center">
+            <Image
+              src={`data:image/jpeg;base64,${post.image}`}
+              alt={post.title}
+              mt={4}
+              mb={4}
+              borderRadius="md"
+            />
+          </Flex>
+          )}
           <Text fontSize="md" lineHeight="tall" mt={4} color="gray.700">
             {post.content}
           </Text>
           <Divider my={6} />
-          <Heading as="h3" size="md" mb={4}>
-            Komentarji
-          </Heading>
-
-          <Button colorScheme="teal" mb={4} onClick={onOpen}>
-            Dodaj komentar
-          </Button>
+          <div className="d-flex flex-row align-items-center justify-content-between">
+            <Heading as="h3" size="md" mb={4}>
+              Komentarji
+            </Heading>
+            <Button mb={4} colorScheme="teal" onClick={onOpen}>
+              <PlusIcon size={20} className="mr-2" />
+              Dodaj komentar
+            </Button>
+          </div>
 
           {post.comments && post.comments.length > 0 ? (
             <VStack spacing={4} align="start">
@@ -201,8 +260,10 @@ const PostDetail: React.FC = () => {
                       {comment.userId.username} -{' '}
                       {new Date(comment.createdAt).toLocaleString()}
                     </Text>
+
                     <Text>{comment.content}</Text>
-                    {user?._id === comment.userId._id && (
+                    {(user?._id === comment.userId._id ||
+                      user?._id === post.userId?._id) && (
                       <Button
                         colorScheme="red"
                         size="sm"
