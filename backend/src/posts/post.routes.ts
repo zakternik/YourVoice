@@ -1,9 +1,11 @@
 import { Router } from 'express';
 import {
+  addComment,
   createPost,
   deletePost,
   getPostById,
   getPostList,
+  removeComment,
   updatePost,
 } from './post.controller.js';
 import { isAuthGuard } from '../_common/middlewares/index.js';
@@ -18,7 +20,7 @@ router.put('/:id', [isAuthGuard], updatePost);
 
 router.delete('/:id', [isAuthGuard], deletePost);
 
-// router.post('/:id/comment', PostController.addComment);
-// router.delete('/:id/comment/:commentId', PostController.removeComment);
+router.post('/:id/comment', addComment);
+router.delete('/:id/comment/:commentId', removeComment);
 
 export default router;
