@@ -1,13 +1,9 @@
 import { Router } from 'express';
+import { isAuthGuard } from '../_common/middlewares/index.js';
+import { getUserInfo } from './user.controller.js';
 
 const router = Router();
 
-router.get('/', UserController.list);
-router.get('/:id', UserController.show);
-router.post('/', UserController.create);
-
-router.post('/login', UserController.login);
-router.put('/:id', UserController.update);
-router.delete('/:id', UserController.remove);
+router.get('/', [isAuthGuard], getUserInfo);
 
 export default router;
