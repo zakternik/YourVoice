@@ -8,10 +8,14 @@ var mongoose = require('mongoose');
 //CORS - React demo
 var cors = require('cors');
 
+import dotenv from 'dotenv';
+
+dotenv.config();
+
 var mongoDB =
   'mongodb+srv://' +
   dbAuth +
-  '@yourvoice.beii5.mongodb.net/YourVoice?retryWrites=true&w=majority&appName=YourVoice';
+  process.env.MONNGO_URI;
 mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true });
 
 // LOKALNA POVEZAVA - MORA DELAT (ZAKOMENTIRAJ ZGORNJO KODO IN UPORABI ZAKOMENTIRANO)

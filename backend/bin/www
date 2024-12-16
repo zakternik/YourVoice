@@ -8,11 +8,14 @@ var app = require('../app');
 var debug = require('debug')('yourvoice:server');
 var http = require('http');
 
+import dotenv from 'dotenv';
+
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
+dotenv.config();
+var port = normalizePort(process.env.APP_PORT || '3000');
 app.set('port', port);
 
 /**
