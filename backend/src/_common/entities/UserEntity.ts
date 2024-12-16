@@ -17,6 +17,7 @@ const UserSchema = new Schema(
         message: () =>
           'Password must be at least 8 characters, contain at least 1 capital letter and number',
       },
+      select: false,
     },
     role: {
       type: String,
